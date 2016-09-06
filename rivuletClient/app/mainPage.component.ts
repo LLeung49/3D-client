@@ -9,11 +9,24 @@ import {Component, Input} from '@angular/core';
 
 
 export class MainPageComponent{
-    p1 = '1';
-    p2 = '2';
-    p3 = '3';
-    p4 = '4';
     username = 'Lucien';
+    age = '26';
+    nationality = 'China';
+    department = 'USYD';
+    filePath = ""
 
-    
+    // myFunction()
+    // {
+    // document.getElementById("demo").innerHTML="我的第一个 JavaScript 函数";
+    // }
+
+    getTask(){
+        this.filePath = (<HTMLInputElement>document.getElementById("importFile")).value;
+        
+
+        
+        alert("username:" + this.username + "age:" + this.age + "filePath:" + this.filePath)
+    }
+
+
 }

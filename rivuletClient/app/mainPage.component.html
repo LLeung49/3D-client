@@ -1,4 +1,4 @@
-<h1>{{ p1 }}</h1>
+
 
 <div class="panel panel-default">
     <div class="panel-body">
@@ -10,9 +10,10 @@
                         <div>Drop files here to upload</div>
                     </form>
 
+
                     <div class="panel panel-default">
                       <div class="panel-body">
-                        <input name="file" type="file" >
+                        <input id="importFile"name="importFile" type="file" >
                       </div>
                     </div>
                      </div>
@@ -24,32 +25,31 @@
                         <div class="panel-body">
 
                             <!-- form section -->
-                            <form class="form-horizontal" method="post" enctype="multipart/form-data">
+                            <form class="form-horizontal" enctype="multipart/form-data" (submit)="getTask()">
                                         <div class="input-group">
-                                            <span class="input-group-addon" id="basic-addon1">Parameter1</span>
-                                            <input type="text" class="form-control" [(ngModel)]=" username " name="name" placeholder="name" aria-describedby="basic-addon1" >
-                                            TODO: remove this: {{ username }}
+                                            <span class="input-group-addon" id="basic-addon1">USERNAME</span>
+                                            <input type="text" class="form-control" ng-control = "user" [(ngModel)]=" username " name="name"  aria-describedby="basic-addon1" >
                                         </div>
 
                                         <br>
 
                                         <div class="input-group">
-                                            <span class="input-group-addon" id="basic-addon2">Parameter2</span>
-                                            <input type="text" class="form-control" placeholder="parameter" aria-describedby="basic-addon1">
+                                            <span class="input-group-addon" id="basic-addon2">AGE</span>
+                                            <input type="text" class="form-control" [(ngModel)]=" age " name="age"  aria-describedby="basic-addon1">
                                         </div>
 
                                         <br>
 
                                         <div class="input-group">
-                                            <span class="input-group-addon" id="basic-addon3">Parameter3</span>
-                                            <input type="text" class="form-control" placeholder="parameter" aria-describedby="basic-addon1">
+                                            <span class="input-group-addon" id="basic-addon3">DEPARTMENT</span>
+                                            <input type="text" class="form-control" [(ngModel)]=" department " name="department" aria-describedby="basic-addon1">
                                         </div>
 
                                         <br>
 
                                         <div class="input-group">
-                                            <span class="input-group-addon" id="basic-addon4">Parameter4</span>
-                                            <input type="text" class="form-control" placeholder="parameter" aria-describedby="basic-addon1">
+                                            <span class="input-group-addon" id="basic-addon4">NATIONALITY</span>
+                                            <input type="text" class="form-control" [(ngModel)]=" nationality " name="nationality" aria-describedby="basic-addon1">
                                         </div>
 
                                         <br>
@@ -73,4 +73,19 @@
             </div>
         </div>
      </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Task information</div>
+    <div class="panel-body">
+        <div class="container-fluid">
+            <link rel="stylesheet" type="text/css" href="statics/style.css">
+            <table>
+                <tr>Username: {{ username }}</tr>
+                <tr>Age: {{ age }}</tr>
+                <tr>Nationality: {{ nationality }}</tr>
+                <tr>Department: {{ department }}</tr>
+            </table>
+        </div>
+    </div>
 </div>

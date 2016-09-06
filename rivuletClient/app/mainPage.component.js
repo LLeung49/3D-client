@@ -11,12 +11,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var MainPageComponent = (function () {
     function MainPageComponent() {
-        this.p1 = '1';
-        this.p2 = '2';
-        this.p3 = '3';
-        this.p4 = '4';
         this.username = 'Lucien';
+        this.age = '26';
+        this.nationality = 'China';
+        this.department = 'USYD';
+        this.filePath = "";
     }
+    // myFunction()
+    // {
+    // document.getElementById("demo").innerHTML="我的第一个 JavaScript 函数";
+    // }
+    MainPageComponent.prototype.getTask = function () {
+        this.filePath = document.getElementById("importFile").value;
+        alert("username:" + this.username + "age:" + this.age + "filePath:" + this.filePath);
+    };
     MainPageComponent = __decorate([
         core_1.Component({
             selector: 'mainpage',

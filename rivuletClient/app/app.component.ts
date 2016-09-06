@@ -6,7 +6,5 @@ import {MainPageComponent} from "./mainPage.component";
   // directives:[MainPageComponent]
 })
 export class AppComponent { 
-  title = 'Tour of Heroes';
-  name = 'Lucien';
-    p1 = '1'
+  title = 'File name';
 }
