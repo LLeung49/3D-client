@@ -1,0 +1,20 @@
+{% extends 'mainPanel/base.html' %}
+
+{% block title %}History{% endblock %}
+
+{% block body %}
+
+    {% if history_list %}
+        <ul>
+            <table width="85%">
+            {% for history in history_list %}
+                <tr>
+                    <td><a href = "#">{{ history.task_desc }} submit by {{ history.user }}</a></td>
+                </tr>
+            {% endfor %}
+            </table>
+        </ul>
+    {% else %}
+        <h3>You don't have any history.</h3>
+    {% endif %}
+{% endblock %}
