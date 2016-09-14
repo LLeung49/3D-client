@@ -8,7 +8,7 @@
             <div class="container-fluid">
 {#                <link rel="stylesheet" type="text/css" href="statics/style.css">#}
                 <div class="row">
-                    <form  id="upload" action="#"  method="POST" enctype="multipart/form-data">
+                    <form  id="upload" action="{% url 'mainPanel:homepage'  %}"  method="POST" enctype="multipart/form-data">
                         <div class="col-lg-6">
                         <!-- file load -->
                             <div id="filedrag" class = "dropzone">
@@ -18,7 +18,7 @@
                             </div>
                             <div>
                                 <label for="fileselect">Files to upload:</label>
-                                <input type="file" id="fileselect" name="fileselect" />
+                                <input type="file" id="file" name="file" />
 
                             </div>
                         </div>
@@ -33,14 +33,14 @@
     {#                                <form class="form-horizontal" enctype="multipart/form-data">#}
                                         <div class="input-group">
                                             <span class="input-group-addon" id="basic-addon1">USERNAME</span>
-                                            <input type="text" class="form-control"  name="name"  aria-describedby="basic-addon1" >
+                                            <input type="text" class="form-control"  name="username"  aria-describedby="basic-addon1" >
                                         </div>
 
                                         <br>
 
                                         <div class="input-group">
                                             <span class="input-group-addon" id="basic-addon1">AGE</span>
-                                            <input type="text" class="form-control" name="age"  aria-describedby="basic-addon1">
+                                            <input type="text" class="form-control" name="desc"  aria-describedby="basic-addon1">
                                         </div>
 
                                         <br>
@@ -90,6 +90,15 @@
         </div>
     </div>
 
+
+
+<form enctype="multipart/form-data" action="#" method="post">
+    <input type="text" name="user" />
+    <input type="text" name="desc" />
+   <input type="file" name="file" />
+   <br/>
+   <input type="submit" value="upload"/>
+</form>
 
 
 
