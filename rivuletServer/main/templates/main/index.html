@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Upload files</title>
+        {% load staticfiles %}
+        <link href="{% static 'css/dropzone.css' %}" type="text/css" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" >
+        <link href='https://fonts.googleapis.com/css?family=Satisfy' rel="stylesheet" type="text/css">
+    </head>
+    <body>
+
+        <!-- IMPORTANT enctype attribute! -->
+        <form class="dropzone" action="{% url "main:home" %}" method="post" enctype="multipart/form-data" id="my-dropzone">
+            {% csrf_token %}
+        </form>
+        <button id="submit-all" data-dz-remove class="btn btn-primary start">
+            <i class="glyphicon glyphicon-upload"></i>
+            <span>Start Submit</span>
+        </button>
+        <button id="cancel" data-dz-remove class="btn btn-warning cancel">
+          <i class="glyphicon glyphicon-ban-circle"></i><span> Cancel Upload</span>
+        </button>
+
+
+        <script src="{% static 'js/dropzone.js' %}"></script>
+        <script type="text/javascript">
+
+            Dropzone.options.myDropzone = {
+                maxFilesize: 4096,
+                // Prevents Dropzone from uploading dropped files immediately
+                autoProcessQueue : false,
+
+                init : function() {
+                    var submitButton = document.querySelector("#submit-all")
+                    var cancelButton = document.querySelector("#cancel")
+                    myDropzone = this;
+
+                    cancelButton.addEventListener("click", function() {
+                        myDropzone.removeAllFiles(true);
+                    });
+                    submitButton.addEventListener("click", function() {
+                        myDropzone.processQueue();
+                        // Tell Dropzone to process all queued files.
+                    });
+                    this.on("uploadprogress", function(file, progress) {
+                        console.log("File progress", progress);
+                    });
+                    // You might want to show the submit button only when
+                    // files are dropped here:
+                    this.on("addedfile", function() {
+                        // Show submit button here and/or inform user to click it.
+                    });
+
+                }
+            };
+        </script>
+    </body>
+</html>
