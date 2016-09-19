@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Rivulet</title>
-    {% load staticfiles %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Upload files</title>
+        {% load staticfiles %}
         <link href="{% static 'css/dropzone.css' %}" type="text/css" rel="stylesheet"/>
+{#        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" >#}
         <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" >
         <link href='https://fonts.googleapis.com/css?family=Satisfy' rel="stylesheet" type="text/css">
         <link href="{% static 'css/normalize.css' %}" type="text/css" rel="stylesheet"/>
@@ -12,10 +13,11 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
         <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
-</head>
-<body>
-    <!-- nav section-->
-    <nav class="navbar navbar-default" >
+
+    </head>
+    <body>
+        <!-- nav section-->
+        <nav class="navbar navbar-default" >
             <div class="container-fluid">
                 <!-- Header -->
                 <div class="navbar-header">
@@ -75,7 +77,68 @@
                 </div>
             </div>
         </nav>
-    {% block body %}
-    {% endblock %}
-</body>
+
+
+        <!-- Upload section -->
+        <div class="panel_section">
+            <!-- IMPORTANT enctype attribute! -->
+            <form class="dropzone" action="{% url "main:upload" %}" method="post" enctype="multipart/form-data" id="my-dropzone">
+                {% csrf_token %}
+            </form>
+            <div class="row">
+                <div class="col-lg-6">
+                    <button id="submit-all" data-dz-remove class="button button-block">
+                        <i class="glyphicon glyphicon-upload"></i>
+                        <span>Start Upload</span>
+                    </button>
+                    </div>
+                <div class="col-lg-6">
+                    <button id="cancel" data-dz-remove class="button button-block">
+                      <i class="glyphicon glyphicon-ban-circle"></i><span> Cancel Upload</span>
+                    </button>
+                </div>
+            </div>
+            <script src="{% static 'js/dropzone.js' %}"></script>
+            <script type="text/javascript">
+
+
+
+                Dropzone.options.myDropzone = {
+                    maxFilesize: 4096,
+                    // Prevents Dropzone from uploading dropped files immediately
+                    autoProcessQueue : false,
+                    acceptedFiles: ".png, .jpg",
+
+                    init : function() {
+                        var submitButton = document.querySelector("#submit-all")
+                        var cancelButton = document.querySelector("#cancel")
+                        myDropzone = this;
+
+                        cancelButton.addEventListener("click", function() {
+                            myDropzone.removeAllFiles(true);
+                        });
+                        submitButton.addEventListener("click", function() {
+                            myDropzone.processQueue();
+                            // Tell Dropzone to process all queued files.
+                        });
+                        this.on("uploadprogress", function(file, progress) {
+                            console.log("File progress", progress);
+                        });
+                        // You might want to show the submit button only when
+                        // files are dropped here:
+                        this.on("addedfile", function() {
+                            // Show submit button here and/or inform user to click it.
+                        });
+
+                    }
+                };
+            </script>
+        </div>
+
+
+
+
+
+
+    </body>
 </html>

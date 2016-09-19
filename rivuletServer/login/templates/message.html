@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>Sign-Up Success</title>
+      {% load staticfiles %}
+    <link href='http://fonts.googleapis.com/css?family=Titillium+Web:400,300,600' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" >
+
+      <link href="{% static 'css/normalize.css' %}" type="text/css" rel="stylesheet"/>
+      <link href="{% static 'css/login.css' %}" type="text/css" rel="stylesheet"/>
+  </head>
+
+  <body>
+    <div class="form">
+        <h1><li class="glyphicon glyphicon-info-sign"></li><span>  {{ message }}</span></h1>
+        <p class="forgot"><a href="{% url 'login:register' %}"><span class="glyphicon glyphicon-repeat"></span>  Go Back to Login</a></p>
+    </div>
+
+
+
+
+  </body>
+</html>

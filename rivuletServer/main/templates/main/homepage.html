@@ -1,0 +1,19 @@
+{% extends 'main/base.html' %}
+
+{% block body %}
+     <div class="panel_section">
+        <h1>Getting Started:</h1>
+        <a href="{% url 'main:upload'%}"><button  class="button button-block">
+          <i class="glyphicon glyphicon-open"></i><span> Upload file</span>
+        </button></a>
+         <a href="{% url 'main:task'%}"><button class="button button-block">
+          <i class="glyphicon glyphicon-plus"></i><span> New Task</span>
+        </button></a>
+        <a><button class="button button-block">
+          <i class="glyphicon glyphicon-hourglass"></i><span> Review</span>
+        </button></a>
+
+
+     </div>
+
+{% endblock %}

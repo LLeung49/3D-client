@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.views import generic
 from django.views.generic import View
 from .forms import UserForm
@@ -9,23 +9,17 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 
 
-# def login(request):
-#     if request.method == 'POST':
-#         username = request.POST.get("username", None)
-#         print(username)
-#         return render_to_response('temp.html')
-#     return redirect('main:home')
-
-
 class UserFormView(View):
     form_class = UserForm
     template_name = 'login.html'
 
     def get(self, request):
+        logout(request)
         form = self.form_class(None)
         return render(request, self.template_name, {'form': form})
 
     def post(self, request):
+        logout(request)
         num_fields = 0
         for key in request.POST:
             num_fields += 1
@@ -41,7 +35,8 @@ class UserFormView(View):
                 password = form.cleaned_data['password']
                 user.set_password(password)
                 user.save()
-                return render_to_response('temp.html')
+                notification = "Thanks to join us."
+                return render(request, 'message.html', {'message': notification})
         elif num_fields == 3:
             username = request.POST['username']
             password = request.POST['password']
@@ -49,8 +44,8 @@ class UserFormView(View):
             user = authenticate(username=username, password=password)
             if user is not None:
                 if user.is_active:
-                    login(request,user)
-                    return redirect('main:home')
+                    login(request, user)
+                    return render_to_response('main/homepage.html', {'user': user}, RequestContext(request))
 
         return render(request, self.template_name, {'form': form})
 

@@ -1,0 +1,77 @@
+{% extends 'main/base.html' %}
+
+{% block body %}
+
+
+            <div class="container-fluid">
+{#                <link rel="stylesheet" type="text/css" href="statics/style.css">#}
+                <div class="row">
+                    <form  id="new_task" action=""  method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="col-lg-6">
+                            <div class="preview_section">
+                            <!-- file load -->
+                                <div id="filedrag" class = "dropzone2">
+                                    <div id="drop_area">Preview</div>
+                                </div>
+                                <div>
+                                    <div id="file_info"></div>
+                                    <label for="fileselect">Files to process:</label>
+                                    <select id="filename" name="filename" form="new_task">
+                                        {% for file in all_files %}
+                                            <option value="{{ file }}">{{ file }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+
+                            <div class="preview_section">
+                                <label>Parameters:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="basic-addon1">USERNAME</span>
+                                        <input type="text" class="form-control"  name="username"  aria-describedby="basic-addon1" >
+                                    </div>
+
+                                    <br>
+
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="basic-addon1">AGE</span>
+                                        <input type="text" class="form-control" name="desc"  aria-describedby="basic-addon1">
+                                    </div>
+
+                                    <br>
+
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="basic-addon3">DEPARTMENT</span>
+                                        <input type="text" class="form-control"  aria-describedby="basic-addon1">
+                                    </div>
+
+                                    <br>
+
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="basic-addon4">NATIONALITY</span>
+                                        <input type="text" class="form-control" aria-describedby="basic-addon1">
+                                    </div>
+
+                                    <br>
+
+
+                                    <div class="row">
+                                        <div class="col-lg-offset-7 col-lg-4">
+                                            <button type="submit" class="btn btn-success" >Submit</button>
+                                        </div>
+                                    </div>
+
+
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+
+
+{% endblock %}
