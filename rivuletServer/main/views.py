@@ -7,6 +7,9 @@ from .forms import UploadFileForm
 from .models import UploadFile, Task
 from django.template import loader
 import os
+import logging
+import subprocess
+
 
 
 # Create your views here.
@@ -19,11 +22,22 @@ def new_task(request):
     elif request.method == 'POST' and request.user.is_authenticated():
         # username = request.POST.get("user", None)
         username = request.user.username
-        filename = request.POST.get("filename")
-        task = Task(username=username, filename=filename)
-        task.save()
-        file_path = UploadFile.objects.get(filename=filename, username=username).file_path()
-        print("=============================\n", file_path)
+        filenames = request.POST.getlist("files[]")
+
+        for file in filenames:
+            task = Task(username=username, filename=file, status="Queuing")
+            task.save()
+            file_path = UploadFile.objects.get(filename=file, username=username).file_path()
+            print("=============================\n", file_path)
+
+        # Call Rivulet module
+        # INTERPRETER = "/usr/bin/python3.4"
+        # processor = "./rivuletpy/rivulet2"
+        # pargs = [INTERPRETER, processor]
+        # pargs.extend(["--file=./rivuletpy/test-crop.tif"])
+        # pargs.extend(["--threshold=0"])
+        # pargs.extend(["--speed=dt"])
+        # subprocess.Popen(pargs)
 
 
 

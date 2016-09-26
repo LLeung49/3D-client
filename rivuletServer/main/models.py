@@ -19,6 +19,7 @@ class UploadFile(models.Model):
 class Task(models.Model):
     filename = models.CharField(max_length=1000)
     username = models.CharField(max_length=100)
+    status = models.CharField(max_length=10, default="Finished")
 
     def __str__(self):
-        return self.username + "-" + self.filename
+        return self.username + "--" + self.filename + "--" + self.status

@@ -17,7 +17,7 @@
                                 <div>
                                     <div id="file_info"></div>
                                     <label for="fileselect">Files to process:</label>
-                                    <select id="filename" name="filename" form="new_task">
+                                    <select multiple id="files" name="files[]" form="new_task">
                                         {% for file in all_files %}
                                             <option value="{{ file }}">{{ file }}</option>
                                         {% endfor %}

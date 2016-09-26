@@ -15,9 +15,26 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from apscheduler.scheduler import Scheduler
+from main.models import Task
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login/', include('login.urls', namespace='login', app_name='login'),),
     url(r'^main/', include('main.urls', namespace='main', app_name='main'),),
 ]
+
+
+
+# sched = Scheduler()
+#
+#
+# @sched.interval_schedule(seconds=1)
+# def mytask():
+#     all_files = Task.objects.filter(status="Queuing")
+#     if all_files:
+#         print("Fils in the queue")
+#     else:
+#         print("Queuing is empty")
+#
+# sched.start()
