@@ -1,0 +1,16 @@
+{% extends 'main/base.html' %}
+
+{% block body %}
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            {% if message.tags %}
+                <b class="{{ message.tags }}"></b>
+            {% endif %}
+            <h1><li class="glyphicon glyphicon-info-sign"></li><span>  {{ message }}</span></h1>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

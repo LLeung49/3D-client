@@ -38,8 +38,26 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     'login',
+    'django_q'
 
 ]
+
+Q_CLUSTER = {
+    'name': 'DjangoORM',
+    'retry': 3600,  # The number of seconds a broker will wait for a cluster to finish a task otherwise retry
+    'workers': 2,  # The number of workers to use in the cluster.
+    'timeout': 3600,  # Timeout in secs for a task, one hour
+    'save_limit': 10,  # Store latest 10 results only
+    'catch_up': False,  # Ignore un-run scheduled tasks
+    'orm': 'default'  # Django database connection
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'djangoq-localmem',
+    }
+}
 
 
 MIDDLEWARE = [

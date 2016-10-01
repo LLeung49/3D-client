@@ -6,7 +6,7 @@
             <div class="container-fluid">
 {#                <link rel="stylesheet" type="text/css" href="statics/style.css">#}
                 <div class="row">
-                    <form  id="new_task" action=""  method="POST" enctype="multipart/form-data">
+                    <form  id="new_task" nanme="new_task" action=""  method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="col-lg-6">
                             <div class="preview_section">
@@ -15,7 +15,6 @@
                                     <div id="drop_area">Preview</div>
                                 </div>
                                 <div>
-                                    <div id="file_info"></div>
                                     <label for="fileselect">Files to process:</label>
                                     <select multiple id="files" name="files[]" form="new_task">
                                         {% for file in all_files %}
@@ -60,7 +59,7 @@
 
                                     <div class="row">
                                         <div class="col-lg-offset-7 col-lg-4">
-                                            <button type="submit" class="btn btn-success" >Submit</button>
+                                            <button type="submit" name="new_task_button" class="btn btn-success" >Submit</button>
                                         </div>
                                     </div>
 
@@ -70,7 +69,151 @@
 
                     </form>
                 </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="preview_section">
+                            <div class="table_panel">
+                                <form id="download" name="download" action=""  method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <table class="table table-hover" cellspacing="0" width="100%" bgcolor="white"  >
+                                         <thead>
+                                            <tr>
+                                                <th><input type="checkbox" onclick="checkAll(this)"></th>
+                                                <th>File Name</th>
+                                                <th>Output File Name</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                                {% for task in all_tasks %}
+                                                    <tr>
+                                                        <td><input type="checkbox" onclick="check_getRow(this)" name="{{ task.outfile_location }}" value="{{ task.outfile_location }}"/></th>
+                                                        <td  onclick="getRow(this)">{{ task.filename }}</td>
+                                                        <td  onclick="getRow(this)">{{ task.outfile_name }}</td>
+                                                        {% if task.status == "QUEUING" %}
+                                                            <td  onclick="getRow(this)"><span class="label label-warning">{{ task.status }}</span></td>
+                                                        {% elif task.status == "FINISHED"%}
+                                                            <td  onclick="getRow(this)"><span class="label label-success">{{ task.status }}</span></td>
+                                                        {% endif  %}
+                                                    </tr>
+                                                {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+                                    <div class="row">
+                                        <div class="col-lg-offset-7 col-lg-4">
+                                            <button type="submit" name="download_button" class="btn btn-success" >download</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+            <script type="text/javascript">
+                function check_getRow(td) {
+                    if (td.checked == false){
+                         td.checked = true
+                     }
+                     else{
+                         td.checked = false
+                     }
+                    var row = td.parentNode.parentNode;
+                    console.log("========", row.nodeName)
+                    if(row.style.backgroundColor == "lightgrey"){
+                        row.style.backgroundColor = "white"
+                    }
+                    else{
+                        row.style.backgroundColor = "lightgrey"
+                    }
+                    var checkboxes = row.getElementsByTagName("input")
+                     for (var i = 0; i < checkboxes.length; i++)
+                     {
+                         if (checkboxes[i].checked == false){
+                             checkboxes[i].checked = true
+                         }
+                         else{
+                             checkboxes[i].checked = false
+                         }
+
+
+                     }
+
+                }
+                function getRow(td) {
+                    var row = td.parentNode;
+                    console.log("========", row.nodeName)
+                    if(row.style.backgroundColor == "lightgrey"){
+                        row.style.backgroundColor = "white"
+                    }
+                    else{
+                        row.style.backgroundColor = "lightgrey"
+                    }
+                    var checkboxes = row.getElementsByTagName("input")
+                     for (var i = 0; i < checkboxes.length; i++)
+                     {
+                         if (checkboxes[i].checked == false){
+                             checkboxes[i].checked = true
+                         }
+                         else{
+                             checkboxes[i].checked = false
+                         }
+
+
+                     }
+
+
+
+                }
+                function checkAll(select_all) {
+
+                     var checkboxes = document.getElementsByTagName('input'), val = null;
+                     for (var i = 0; i < checkboxes.length; i++)
+                     {
+                         if (checkboxes[i].type == 'checkbox')
+                         {
+                             if (val === null) val = checkboxes[i].checked;
+                             checkboxes[i].checked = val;
+                         }
+                     }
+
+
+
+
+                    var rows = document.getElementsByTagName('tr')
+                    console.log(select_all.checked)
+                    if (select_all.checked == true){
+                        for (var i = 1; i < rows.length; i++){
+                                rows[i].style.backgroundColor = "lightgrey"
+                        }
+                    }
+                    else{
+                        for (var i = 1; i < rows.length; i++){
+                                rows[i].style.backgroundColor = "white"
+                        }
+                    }
+
+
+
+                 }
+
+            </script>
+{#            <form action="{% url 'main:order' %}" method="post">#}
+{#                <select class="form-control" name="fruit_type">#}
+{#                    <option>Apple</option> <option>Banana</option>#}
+{#                </select>#}
+{#                <input type="number" name="num_fruit" min="1">#}
+{#                <button type="submit">Send invitation</button>#}
+{#                {% csrf_token %}#}
+{#            </form>#}
+
+
+
+
 
 
 

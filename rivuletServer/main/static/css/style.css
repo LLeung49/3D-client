@@ -20,12 +20,19 @@ a {
 a:hover {
   color: #179b77;
 }
+
+.table_panel {
+    border-radius: 20px;
+}
 .navbar-brand{
     font-family: 'Satisfy',cursive;
     font-size: 2rem;
   font-weight: 600;
 }
+.container-fluid .row{
+    padding: 10px 20px 30px 20px;
 
+}
 .panel_section {
   background: rgba(19, 35, 47, 0.9);
   padding: 40px;
@@ -34,6 +41,19 @@ a:hover {
   border-radius: 40px;
   box-shadow: 0 4px 10px 4px rgba(19, 35, 47, 0.3);
     text-align: center;
+}
+
+.table-hover{
+    border-radius: 10px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    border-radius: 10px;
+    background-color: white;
+}
+.table-hover tr{
+    /*background-color: white;*/
+
 }
 .panel_section h1{
     color: white;
