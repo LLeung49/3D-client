@@ -4,5 +4,5 @@ urlpatterns = [
     url(r'^$', views.home, name='home'),
     url(r'^upload/$', views.upload, name='upload'),
     url(r'^new_task/$', views.new_task, name='task'),
-    url(r'^new_order$', views.order, name='order'),
+    # url(r'^new_order$', views.order, name='order'),
     ]

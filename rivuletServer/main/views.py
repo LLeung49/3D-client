@@ -13,26 +13,27 @@ from django.contrib import messages
 from django_q.humanhash import humanize
 from django_q.tasks import async, result
 import time
-
+import zipfile
+from io import BytesIO
 
 # Create your views here.
 
 
-def order(request):
-    fruit = request.POST.get('fruit_type', '')
-    num_fruit = int(request.POST.get('num_fruit', '1'))
-    task_id = async('main.tasks.order_fruit', fruit=fruit, num_fruit=num_fruit)  # Create async task
-    print("==========================\n", fruit)
-    print("==========================\n", num_fruit)
-    # ret2 = result(task_id, 10000)  # block and wait for 200 ms
-    # print("==========================\n", ret2)
-
-    messages.info(  # Django message as notification
-        request,
-        'You ordered {fruit:s} x {num_fruit:d} (task: {task})'
-        .format(fruit=fruit, num_fruit=num_fruit, task=humanize(task_id))
-    )
-    return render(request, 'main/message.html')
+# def order(request):
+#     fruit = request.POST.get('fruit_type', '')
+#     num_fruit = int(request.POST.get('num_fruit', '1'))
+#     task_id = async('main.tasks.order_fruit', fruit=fruit, num_fruit=num_fruit)  # Create async task
+#     print("==========================\n", fruit)
+#     print("==========================\n", num_fruit)
+#     # ret2 = result(task_id, 10000)  # block and wait for 200 ms
+#     # print("==========================\n", ret2)
+#
+#     messages.info(  # Django message as notification
+#         request,
+#         'You ordered {fruit:s} x {num_fruit:d} (task: {task})'
+#         .format(fruit=fruit, num_fruit=num_fruit, task=humanize(task_id))
+#     )
+#     return render(request, 'main/message.html')
 
 
 def new_task(request):
@@ -76,9 +77,27 @@ def new_task(request):
             )
             return render(request, 'main/message.html')
         elif 'download_button' in request.POST:
+            request_files = []
             for item in request.POST:
-                print(item)
-    return render(request, 'main/task.html')
+                if item != "download_button" and item != "csrfmiddlewaretoken":
+                    request_files.append(item)
+            download_time = time.strftime("%Y%m%d%H%M%S")
+            zip_subdir = "zip_swc_file_" + download_time
+            zip_filename = "%s.zip" % zip_subdir   # construct zipfile name
+            s = BytesIO()
+            zf = zipfile.ZipFile(s, "w")
+
+            for fpath in request_files:
+                print("=========================\n", fpath)
+                fdir, fname = os.path.split(fpath)
+                zip_path = os.path.join(zip_subdir, fname)
+                zf.write(fpath, zip_path)
+            zf.close()
+            resp = HttpResponse(s.getvalue(), content_type="application/x-zip-compressed")
+            resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
+
+            return resp
+    # return render(request, 'main/task.html')
 
     notification = "Please Login First."
     return render(request, 'message.html', {'message': notification})

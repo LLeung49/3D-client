@@ -20,7 +20,6 @@ a {
 a:hover {
   color: #179b77;
 }
-
 .table_panel {
     border-radius: 20px;
 }
@@ -43,6 +42,10 @@ a:hover {
     text-align: center;
 }
 
+
+
+
+
 .table-hover{
     border-radius: 10px;
     font-size: 1.5rem;
@@ -50,11 +53,67 @@ a:hover {
     letter-spacing: .1em;
     border-radius: 10px;
     background-color: white;
+    table-layout:fixed;
+    width:1700px;
 }
-.table-hover tr{
-    /*background-color: white;*/
 
+.table-hover tbody{
+    height:300px;
+    overflow:auto;
+    display:block;
 }
+.table-hover thead{
+    display:block;
+    width: 100%;
+}
+
+.table-hover td.box{
+    width: 50px;
+    /*overflow: hidden;*/
+}
+.table-hover td.filename{
+    width: 500px;
+    text-align:left;
+}
+.table-hover td.outfile{
+    width: 900px;
+     text-align:left;
+}
+.table-hover td.status{
+    width: 300px;
+    text-align:center;
+}
+.table-hover tr.box{display:block;}
+
+.table-hover th.box{
+    width: 50px;
+    /*overflow: hidden;*/
+}
+.table-hover th.filename{
+    width: 500px;
+    text-align:left;
+}
+.table-hover th.outfile{
+    width: 900px;
+    text-align:left;
+}
+.table-hover th.status{
+    width: 300px;
+    text-align:center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 .panel_section h1{
     color: white;
     font-size: 4rem;
