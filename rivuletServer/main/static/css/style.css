@@ -76,7 +76,11 @@ a:hover {
     text-align:left;
 }
 .table-hover td.outfile{
-    width: 900px;
+    width: 600px;
+     text-align:left;
+}
+.table-hover td.submit_time{
+    width: 300px;
      text-align:left;
 }
 .table-hover td.status{
@@ -94,8 +98,12 @@ a:hover {
     text-align:left;
 }
 .table-hover th.outfile{
-    width: 900px;
+    width: 600px;
     text-align:left;
+}
+.table-hover th.submit_time{
+    width: 300px;
+     text-align:left;
 }
 .table-hover th.status{
     width: 300px;
@@ -206,7 +214,33 @@ a:hover {
 
 .button-block {;
   width: 80%;
+  font-size: 1rem;
+  font-weight: 100;
 
+}
+
+
+
+.table_button_group button{
+      border: 0;
+  outline: none;
+  border-radius: 0;
+  padding: 5px 5px;  margin: 0px 3px 0px 0px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  background: white;
+  /*color: #ffffff;*/
+  -webkit-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  -webkit-appearance: none;
+    border-radius: 5px;
+    color: black;
+}
+
+.table_button_group button:hover, button:focus{
+    background: #4682b4;
 }
 
 .dropzone2{
@@ -236,6 +270,10 @@ a:hover {
     font-size: 3rem;
     font-weight: 600;
 }
+
+
+
+
 .navbar-default {
   background-color: #13232f;
   border-color: #194481;

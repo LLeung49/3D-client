@@ -13,6 +13,8 @@ from django.contrib import messages
 from django_q.humanhash import humanize
 from django_q.tasks import async, result
 import time
+from datetime import datetime
+from pytz import timezone
 import zipfile
 from io import BytesIO
 
@@ -56,8 +58,21 @@ def new_task(request):
             message = "YOU SUBMITTED:\n<br>"
             for file in filenames:
                 file_path = UploadFile.objects.get(filename=file, username=username).file_path()
-                submit_time = time.strftime("%Y%m%d%H%M%S")
-                print("=============================\n" + submit_time, file_path)
+
+                fmt = "%Y-%m-%d %H:%M:%S %Z%z"
+
+                # Current time in UTC
+                now_utc = datetime.now(timezone('UTC'))
+                print("+++++++++", now_utc.strftime(fmt))
+
+                # Convert to US/Pacific time zone
+                now_local = now_utc.astimezone(timezone('Australia/Sydney'))
+                print("_+++++++++++++++", now_local.strftime(fmt))
+
+
+
+                submit_time = now_utc.strftime("%Y%m%d%H%M%S")
+                str_time = now_local.strftime("%Y-%b-%d %H:%M:%S")
                 output_file = file + "_" + submit_time + ".swc"
                 output_location = file_path + "_" + submit_time + ".swc"
 
@@ -66,7 +81,8 @@ def new_task(request):
                 task_token = humanize(task_id)
 
                 task = Task(username=username, filename=file, status="QUEUING",
-                            outfile_name=output_file, outfile_location=output_location, task_id=task_id)
+                            outfile_name=output_file, outfile_location=output_location, task_id=task_id,
+                            submit_time=str_time)
                 task.save()
 
                 message = message + file + '---> task_id: ' + str(task_token) + "<br>"

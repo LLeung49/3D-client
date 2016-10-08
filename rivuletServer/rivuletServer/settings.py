@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     'login',
-    'django_q'
+    'django_q',
+
 
 ]
 

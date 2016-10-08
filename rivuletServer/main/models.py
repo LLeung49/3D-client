@@ -20,6 +20,7 @@ class Task(models.Model):
     filename = models.CharField(max_length=1000)
     username = models.CharField(max_length=100)
     outfile_name = models.CharField(max_length=1000, default="b")
+    submit_time = models.CharField(max_length=50, default="2016-Oct-07 11:10:09")
     outfile_location = models.CharField(max_length=1000, default="a")
     task_id = models.CharField(max_length=1000, default="a")
     status = models.CharField(max_length=10)

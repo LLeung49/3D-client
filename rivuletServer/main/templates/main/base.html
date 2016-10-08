@@ -11,7 +11,8 @@
         <link href="{% static 'css/style.css' %}" type="text/css" rel="stylesheet"/>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
         <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
+        <script src="{% static 'js/jquery-latest.js' %}"></script>
+        <script src="{% static 'js/jquery.tablesorter.js' %}"></script>
 </head>
 <body>
     <!-- nav section-->
@@ -38,11 +39,6 @@
                         <li class="">
                             <a href="{% url 'main:upload'%}">
                                 <span class="glyphicon glyphicon-open" aria-hidden="true"></span>&nbsp;Upload file
-                            </a>
-                        </li>
-                        <li class="">
-                            <a href="#">
-                                <span class="glyphicon glyphicon-hourglass" aria-hidden="true"></span>&nbsp;History
                             </a>
                         </li>
 

@@ -83,10 +83,11 @@
                                             <table class="table table-hover" align="center"  id="task_table" cellspacing="0" width="100%" bgcolor="white"  >
                                                  <thead>
                                                     <tr>
-                                                        <th class="box"><input type="checkbox" onclick="checkAll(this)"></th>
-                                                        <th class="filename">File Name</th>
-                                                        <th class="outfile">Output File Name</th>
-                                                        <th align="left" class="status">Status</th>
+                                                        <th class="box"><span class="glyphicon glyphicon-check"></span></th>
+                                                        <th class="filename">File Name <span class="glyphicon glyphicon-sort"></span></th>
+                                                        <th class="outfile">Output File Name <span class="glyphicon glyphicon-sort"></span></th>
+                                                        <th class="submit_time">Submit Time <span class="glyphicon glyphicon-sort"></span></th>
+                                                        <th align="left" class="status">Status <span class="glyphicon glyphicon-sort"></span></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -96,12 +97,14 @@
                                                                     <td class="box"><input type="checkbox" onclick="check_getRow(this)" name="{{ task.outfile_location }}" value="{{ task.outfile_location }}"/></th>
                                                                     <td class="filename" onclick="getRow(this)">{{ task.filename }}</td>
                                                                     <td class="outfile" onclick="getRow(this)">{{ task.outfile_name }}</td>
+                                                                    <td class="submit_time" onclick="getRow(this)">{{ task.submit_time }}</td>
                                                                     <td align="left" class="status" onclick="getRow(this)"><span class="label label-success">{{ task.status }}</span></td>
 
                                                                 {% else %}
                                                                     <td class="box"><input type="checkbox"  disabled readonly/></th>
                                                                     <td class="filename">{{ task.filename }}</td>
                                                                     <td class="outfile">{{ task.outfile_name }}</td>
+                                                                    <td class="submit_time">{{ task.submit_time }}</td>
                                                                     <td class="status"><span class="label label-warning">{{ task.status }}</span></td>
 
                                                                 {% endif %}
@@ -112,8 +115,16 @@
                                                 </tbody>
 
                                             </table>
+                                            <div class="table_button_group">
+                                                <button class="table_button" type="button" onclick="checkAll(this)">Select all</button>
+                                                <button class="table_button" type="button" onclick="invert_select(this)">Select invert</button>
+                                                <button class="table_button" type="button" onclick="empty_select(this)">Reselect</button>
+
+                                            </div>
+
 
                                     <div class="row">
+
                                         <div class="col-lg-offset-7 col-lg-4">
                                             <button type="submit" name="download_button" class="btn btn-success" >download</button>
                                         </div>
@@ -127,20 +138,27 @@
 
             </div>
             <script type="text/javascript">
+                $(document).ready(function()
+                    {
+                        $("#task_table").tablesorter();
+                    }
+                );
+
                 window.onload=function()
                 {
-                   var checkboxes = document.getElementsByTagName('input'), val = null;
+
+                   var checkboxes = document.getElementsByTagName('input')
                      for (var i = 0; i < checkboxes.length; i++)
                      {
                          if (checkboxes[i].type == 'checkbox')
                          {
-                             if (val === null) val = checkboxes[i].checked;
-                             checkboxes[i].checked = val;
+                             checkboxes[i].checked = false;
                          }
                      }
                 }
 
                 function check_getRow(td) {
+                    console.log(td.checked)
                     var row = td.parentNode.parentNode;
                     var queuing = false
 {#                    console.log("========ok", row.nodeName)#}
@@ -230,43 +248,59 @@
 
                 }
                 function checkAll(select_all) {
-
-                     var checkboxes = document.getElementsByTagName('input'), val = null;
-                     for (var i = 0; i < checkboxes.length; i++)
+                    var checkboxes = document.getElementsByTagName('input')
+                    for (var i = 0; i < checkboxes.length; i++)
                      {
                          if (checkboxes[i].type == 'checkbox')
                          {
-                             if (val === null) val = checkboxes[i].checked;
-                             checkboxes[i].checked = val;
+                             checkboxes[i].checked = true;
                          }
                      }
 
-
-
-
                     var rows = document.getElementsByTagName('tr')
-                    if (select_all.checked == true){
-                        for (var i = 1; i < rows.length; i++){
-                            var queuing = false
-                            var status_td = rows[i].getElementsByTagName("span")
-                                 console.log(status_td[0].innerHTML)
-                                 if (status_td[0].innerHTML == "FINISHED"){
-                                    queuing = true
-                            }
-                            if(queuing){
-                                rows[i].style.backgroundColor = "lightgrey"
-                            }
+                    for (var i = 1; i < rows.length; i++){
+                        var queuing = false
+                        var status_td = rows[i].getElementsByTagName("span")
+                             console.log(status_td[0].innerHTML)
+                             if (status_td[0].innerHTML == "FINISHED"){
+                                queuing = true
+                        }
+                        if(queuing){
+                            rows[i].style.backgroundColor = "lightgrey"
                         }
                     }
-                    else{
-                        for (var i = 1; i < rows.length; i++){
-                            rows[i].style.backgroundColor = "white"
-                        }
-                    }
-
-
+                }
+                function invert_select() {
+                    var checkboxes = document.getElementsByTagName('input')
+                    for (var i = 0; i < checkboxes.length; i++)
+                     {
+                         if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true)
+                         {
+                             checkboxes[i].checked = false
+                             checkboxes[i].parentNode.parentNode.style.backgroundColor = "white"
+                         }
+                         else if(checkboxes[i].type == 'checkbox' && checkboxes[i].checked == false){
+                             checkboxes[i].checked = true
+                             checkboxes[i].parentNode.parentNode.style.backgroundColor = "lightgrey"
+                         }
+                     }
+                }
+            function empty_select(){
+                 var checkboxes = document.getElementsByTagName('input')
+                 for (var i = 0; i < checkboxes.length; i++)
+                 {
+                     if (checkboxes[i].type == 'checkbox')
+                     {
+                         checkboxes[i].checked = false
+                     }
 
                  }
+                var rows = document.getElementsByTagName('tr')
+                    for (var i = 1; i < rows.length; i++){
+                            rows[i].style.backgroundColor = "white"
+                    }
+
+            }
 
             </script>
 {#            <form action="{% url 'main:order' %}" method="post">#}
