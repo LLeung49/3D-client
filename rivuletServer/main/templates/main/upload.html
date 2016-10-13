@@ -93,18 +93,54 @@
                     </button>
                 </div>
             </div>
+{#            {% for file in all_upload_files %}#}
+{#                <p>{{ file }}</p>#}
+{#            {% endfor %}#}
             <script src="{% static 'js/dropzone.js' %}"></script>
             <script type="text/javascript">
 
-
+                var upload_files_size = 0
 
                 Dropzone.options.myDropzone = {
                     maxFilesize: 4096,
                     // Prevents Dropzone from uploading dropped files immediately
                     autoProcessQueue : false,
                     acceptedFiles: ".tif, .v3d",
-                    maxFiles: 5,
+                    maxFiles: 6,
                     parallelUploads: 5,
+                    dictMaxFilesExceeded: 'Upload 5 files a time maximum!',
+
+                    accept: function(file, done) {
+                        var all_upload_files = {{ all_upload_files|safe }};
+                        var free_storage = {{ free_storage }}
+                        var exceed_capacity = false
+
+                        console.log(file.size/(1024*1024))
+
+                        console.log(all_upload_files.length)
+                        console.log(free_storage)
+                        var exist = false
+                        if((upload_files_size + file.size/(1024*1024)) > free_storage){
+                            exceed_capacity = true
+                        }
+                        for(var i=0; i < all_upload_files.length; i++){
+                            console.log(all_upload_files[i])
+                            if(file.name == all_upload_files[i]){
+                                exist = true
+                            }
+                        }
+                        if(exist){
+                            done("File already exist!")
+                        }
+                        else if(exceed_capacity){
+                            var capacity_remaining = free_storage - upload_files_size
+                            done("Exceed maximum storage capacity! Only " + capacity_remaining.toFixed(2).toString() + "m left!")
+                            }
+                        else{
+                            done()
+                            upload_files_size = upload_files_size + file.size/(1024*1024)
+                        }
+                    },
 
                     init : function() {
                         var submitButton = document.querySelector("#submit-all")
@@ -113,6 +149,8 @@
 
                         cancelButton.addEventListener("click", function() {
                             myDropzone.removeAllFiles(true);
+                            upload_files_size = 0
+
                         });
                         submitButton.addEventListener("click", function() {
                             myDropzone.processQueue();

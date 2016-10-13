@@ -3,288 +3,392 @@
 {% block body %}
 
 
-            <div class="container-fluid">
+        <div class="container-fluid">
 {#                <link rel="stylesheet" type="text/css" href="statics/style.css">#}
-                <div class="row">
-                    <form  id="new_task" nanme="new_task" action=""  method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="col-lg-6">
-                            <div class="preview_section">
-                            <!-- file load -->
-                                <div id="filedrag" class = "dropzone2">
-                                    <div id="drop_area">Preview</div>
-                                </div>
-                                <div>
-                                    <label for="fileselect">Select Files to process:</label>
-                                    <select multiple id="files" name="files[]" form="new_task">
-                                        {% for file in all_files %}
-                                            <option value="{{ file }}">{{ file }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-
-                            <div class="preview_section">
-                                <label>Parameters:</label>
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon1">USERNAME</span>
-                                        <input type="text" class="form-control"  name="username"  aria-describedby="basic-addon1" >
-                                    </div>
-
-                                    <br>
-
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon1">AGE</span>
-                                        <input type="text" class="form-control" name="desc"  aria-describedby="basic-addon1">
-                                    </div>
-
-                                    <br>
-
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon3">DEPARTMENT</span>
-                                        <input type="text" class="form-control"  aria-describedby="basic-addon1">
-                                    </div>
-
-                                    <br>
-
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon4">NATIONALITY</span>
-                                        <input type="text" class="form-control" aria-describedby="basic-addon1">
-                                    </div>
-
-                                    <br>
-
-
-                                    <div class="row">
-                                        <div class="col-lg-offset-7 col-lg-4">
-                                            <button type="submit" name="new_task_button" class="btn btn-success" >Submit</button>
-                                        </div>
-                                    </div>
-
-
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-
-
-                {% if all_tasks %}
-                <div class="row">
-                    <div class="col-lg-12">
+            <div class="row">
+                <form  id="new_task" nanme="new_task" method="POST" onsubmit="return confirm_tasks()" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="col-lg-6">
                         <div class="preview_section">
-                            <div class="table_panel">
-                                <form id="download" name="download" action=""  method="POST" enctype="multipart/form-data">
-                                    {% csrf_token %}
+                        <!-- file load -->
+                            <div id="filedrag" class = "dropzone2">
+                                <div id="drop_area">Preview</div>
+                            </div>
+                            <div>
 
-
-                                            <table class="table table-hover" align="center"  id="task_table" cellspacing="0" width="100%" bgcolor="white"  >
-                                                 <thead>
-                                                    <tr>
-                                                        <th class="box"><span class="glyphicon glyphicon-check"></span></th>
-                                                        <th class="filename">File Name <span class="glyphicon glyphicon-sort"></span></th>
-                                                        <th class="outfile">Output File Name <span class="glyphicon glyphicon-sort"></span></th>
-                                                        <th class="submit_time">Submit Time <span class="glyphicon glyphicon-sort"></span></th>
-                                                        <th align="left" class="status">Status <span class="glyphicon glyphicon-sort"></span></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                        {% for task in all_tasks %}
-                                                            <tr>
-                                                                {% if task.status == "FINISHED"%}
-                                                                    <td class="box"><input type="checkbox" onclick="check_getRow(this)" name="{{ task.outfile_location }}" value="{{ task.outfile_location }}"/></th>
-                                                                    <td class="filename" onclick="getRow(this)">{{ task.filename }}</td>
-                                                                    <td class="outfile" onclick="getRow(this)">{{ task.outfile_name }}</td>
-                                                                    <td class="submit_time" onclick="getRow(this)">{{ task.submit_time }}</td>
-                                                                    <td align="left" class="status" onclick="getRow(this)"><span class="label label-success">{{ task.status }}</span></td>
-
-                                                                {% else %}
-                                                                    <td class="box"><input type="checkbox"  disabled readonly/></th>
-                                                                    <td class="filename">{{ task.filename }}</td>
-                                                                    <td class="outfile">{{ task.outfile_name }}</td>
-                                                                    <td class="submit_time">{{ task.submit_time }}</td>
-                                                                    <td class="status"><span class="label label-warning">{{ task.status }}</span></td>
-
-                                                                {% endif %}
-
-                                                            </tr>
-                                                        {% endfor %}
-
-                                                </tbody>
-
-                                            </table>
-                                            <div class="table_button_group">
-                                                <button class="table_button" type="button" onclick="checkAll(this)">Select all</button>
-                                                <button class="table_button" type="button" onclick="invert_select(this)">Select invert</button>
-                                                <button class="table_button" type="button" onclick="empty_select(this)">Reselect</button>
-
-                                            </div>
-
-
-                                    <div class="row">
-
-                                        <div class="col-lg-offset-7 col-lg-4">
-                                            <button type="submit" name="download_button" class="btn btn-success" >download</button>
-                                        </div>
-                                    </div>
-                                </form>
+                                <div class="table_button_group">
+{#                                    <label for="fileselect">Select Files to process:</label>#}
+                                        <input type="checkbox" onchange="checkAll_radio(this)"><label id="checkbox_text">Select All</label></input>
+                                        <button class="table_button" name="delete_raw_file_button" id="delete_raw_file_button" onclick="clicked='delete_raw_files'" type="submit">Delete Selected Raw Files</button>
+                                </div>
+                                <select multiple id="files" name="files[]" form="new_task" required>
+                                    {% for file in all_files %}
+                                        <option value="{{ file }}">{{ file }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
                     </div>
-                </div>
-            {% endif %}
+                    <div class="col-lg-6">
 
+                        <div class="preview_section">
+                            <label>Parameters:</label>
+                                <div class="row">
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="basic-addon1">THRESHOLD</span>
+                                    <input type="number" class="form-control" value="10" min="0" name="threshold"  aria-describedby="basic-addon1" >
+                                </div>
+                                <br>
+                                <br>
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="basic-addon3">SSMITER</span>
+                                    <input type="number" class="form-control" value="20" min="1" max="100" id="ssmiter" name="ssmiter"  aria-describedby="basic-addon1">
+                                </div>
+                                <br><br>
+                                <div class="input-group">
+                                    <span class="label label-primary">SPEED:</span>
+                                </div>
+
+                                <div class="container_radio">
+                                    <ul>
+                                    <li>
+                                        <input type="radio" id="f-option" value="ssm" name="speed" onchange="select_ssm()">
+                                        <label for="f-option">SSM</label>
+
+                                        <div class="check"></div>
+
+                                    </li>
+
+                                    <li>
+                                        <input type="radio" id="s-option" value="dt" name="speed" onchange="select_dt()">
+                                        <label for="s-option">DT</label>
+
+                                        <div class="check"><div class="inside"></div></div>
+                                    </li>
+                                    </ul>
+
+                                </div>
+                                </div>
+
+
+                                <div class="row">
+                                    <div class="col-lg-offset-8 col-lg-4">
+                                        <button type="submit" onclick="clicked='new_tasks'" name="new_task_button" class="btn btn-success" >Submit</button>
+                                    </div>
+                                </div>
+
+
+                        </div>
+                    </div>
+
+                </form>
             </div>
-            <script type="text/javascript">
-                $(document).ready(function()
-                    {
-                        $("#task_table").tablesorter();
-                    }
-                );
 
-                window.onload=function()
+
+            {% if all_tasks %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="preview_section">
+                        <div class="table_panel" id="page-wrap">
+                            <form id="download" name="task_table" action=""  method="POST" onsubmit="return check_selection()" enctype="multipart/form-data">
+                                {% csrf_token %}
+
+
+                                        <table class="table table-hover" align="center"  id="task_table" cellspacing="0" width="100%" bgcolor="white"  >
+                                             <thead>
+                                                <tr>
+                                                    <th class="box"><span class="glyphicon glyphicon-check"></span></th>
+                                                    <th class="filename">File Name <span class="glyphicon glyphicon-sort"></span></th>
+                                                    <th class="outfile">Output File Name <span class="glyphicon glyphicon-sort"></span></th>
+                                                    <th class="submit_time">Submit Date <span class="glyphicon glyphicon-sort"></span></th>
+                                                    <th align="left" class="status">Status <span class="glyphicon glyphicon-sort"></span></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                    {% for task in all_tasks %}
+                                                        <tr data-html="true"  title="Threshold:{{ task.threshold }}&#010;Speed:&#009;{{ task.speed }}&#010;Ssmiter:&#009;{{ task.ssmiter }}">
+                                                            {% if task.status == "FINISHED" %}
+                                                                <td class="box"><input type="checkbox" onclick="check_getRow(this)" name="{{ task.outfile_location }}" value="{{ task.outfile_location }}"/></th>
+                                                                <td class="filename" onclick="getRow(this)">{{ task.filename }}</td>
+                                                                <td class="outfile" onclick="getRow(this)">{{ task.outfile_name }}</td>
+                                                                <td class="submit_time" onclick="getRow(this)">{{ task.submit_time }}</td>
+                                                                <td align="left" class="status" onclick="getRow(this)"><span class="label label-success">{{ task.status }}</span></td>
+
+                                                            {% elif task.status == "QUEUING" %}
+                                                                <td class="box"><input type="checkbox"  disabled readonly/></th>
+                                                                <td class="filename">{{ task.filename }}</td>
+                                                                <td class="outfile">{{ task.outfile_name }}</td>
+                                                                <td class="submit_time">{{ task.submit_time }}</td>
+                                                                <td class="status"><span class="label label-warning">{{ task.status }}</span></td>
+                                                            {% else%}
+                                                                <td class="box"><input type="checkbox"  disabled readonly/></th>
+                                                                <td class="filename">{{ task.filename }}</td>
+                                                                <td class="outfile">{{ task.outfile_name }}</td>
+                                                                <td class="submit_time">{{ task.submit_time }}</td>
+                                                                <td class="status"><span class="label label-danger">{{ task.status }}</span></td>
+                                                            {% endif %}
+
+                                                        </tr>
+                                                    {% endfor %}
+
+                                            </tbody>
+
+                                        </table>
+                                        <div class="table_button_group">
+                                            <button class="table_button" type="button" onclick="checkAll(this)">Select all</button>
+                                            <button class="table_button" type="button" onclick="invert_select(this)">Select invert</button>
+                                            <button class="table_button" type="button" onclick="empty_select(this)">Reselect</button>
+
+                                        </div>
+
+
+                                <div class="row">
+
+                                    <div class="col-lg-offset-8 col-lg-4">
+                                        <button type="submit" id="delete_button" name="delete_button" class="btn btn-danger" onclick="clicked='delete'">Delete</button>
+                                        <button name="download_button" class="btn btn-success"  type="submit" onclick="clicked='download'">download</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        </div>
+        <script type="text/javascript">
+            var clicked;
+            $(document).ready(function()
                 {
+                    $("#task_table").tablesorter();
+{#                    $('[data-toggle="tooltip"]').tooltip();#}
+                }
+            );
 
-                   var checkboxes = document.getElementsByTagName('input')
+            window.onload=function()
+            {
+                document.getElementById('f-option').checked = true;
+               var checkboxes = document.getElementsByTagName('input')
+                 for (var i = 0; i < checkboxes.length; i++)
+                 {
+                     if (checkboxes[i].type == 'checkbox')
+                     {
+                         checkboxes[i].checked = false;
+                     }
+                 }
+            }
+
+            function confirm_tasks() {
+                if (clicked == "delete_raw_files") {
+                    if (confirm("Do you really want to delete those raw files?")) {
+                        return true
+                    }
+                    else {
+                        return false
+                    }
+
+                }
+                else{
+                    return true
+                }
+            }
+            function checkAll_radio(checkbox) {
+                var options = document.getElementsByTagName('option')
+                if(checkbox.checked == true){
+                    for(var i = 0; i < options.length; i++){
+                        options[i].selected = true
+                    }
+                }
+                else{
+                    for(var i = 0; i < options.length; i++){
+                        options[i].selected = false
+                    }
+                }
+            }
+
+
+            function check_selection() {
+
+                var checkboxes = document.getElementsByTagName('input')
+                var make_selection = false
+                for (var i = 0; i < checkboxes.length; i++)
+                 {
+                     if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true)
+                     {
+                         make_selection = true
+                     }
+                 }
+                if (make_selection == true){
+                   if(clicked == "download"){
+                        return true
+                   }
+                    else if(clicked == "delete"){
+                        if(confirm("Do you really want to delete those processed files?")){
+                            return true
+                        }
+                       else{
+                            return false
+                        }
+
+                    }
+
+                }
+                else{
+{#                    window.confirm("Please select files to download/delete.");#}
+                    sweetAlert("Oops...", "Please select at least one file!", "error");
+                    return false
+                }
+            }
+
+
+            function select_ssm() {
+                document.getElementById('ssmiter').disabled = false;
+                document.getElementById('ssmiter').readOnly = false;
+                document.getElementById('ssmiter').value = 20;
+            }
+            function select_dt() {
+                document.getElementById('ssmiter').disabled = true;
+                document.getElementById('ssmiter').readOnly = true;
+                document.getElementById('ssmiter').value = "";
+            }
+            function check_getRow(td) {
+                console.log(td.checked)
+                var row = td.parentNode.parentNode;
+                var queuing = false
+{#                    console.log("========ok", row.nodeName)#}
+                if (row.nodeName == "TR"){
+                    var cells = row.getElementsByTagName("span")
+                     for (var i = 0; i < cells.length; i++) {
+{#                             console.log(cells[i].innerHTML)#}
+                         if (cells[i].innerHTML == "QUEUING"){
+                            queuing = true
+                        }
+                    }
+                }
+                if (queuing){
+                    alert("This task is not available yet...")
+                    td.checked = false
+                }
+                else{
+                    if (td.checked == false){
+                        td.checked = true
+                    }
+                    else{
+                         td.checked = false
+                    }
+                    var row = td.parentNode.parentNode;
+                    console.log("========", row.nodeName)
+                    if(row.style.backgroundColor == "lightgrey"){
+                        row.style.backgroundColor = "white"
+                    }
+                    else{
+                        row.style.backgroundColor = "lightgrey"
+                    }
+                    var checkboxes = row.getElementsByTagName("input")
+                    for (var i = 0; i < checkboxes.length; i++)
+                    {
+                         if (checkboxes[i].checked == false){
+                             checkboxes[i].checked = true
+                         }
+                         else{
+                             checkboxes[i].checked = false
+                         }
+                    }
+                }
+
+            }
+            function getRow(td) {
+                var row = td.parentNode;
+                console.log("========", row.nodeName)
+                var queuing = false
+                if (row.nodeName == "TR"){
+                    var cells = row.getElementsByTagName("span")
+                     for (var i = 0; i < cells.length; i++) {
+                         console.log(cells[i].innerHTML)
+                         if (cells[i].innerHTML == "QUEUING"){
+                            queuing = true
+                        }
+                    }
+                }
+
+                if (queuing){
+                    alert("This task is not available yet...")
+                }
+                else{
+                    if(row.style.backgroundColor == "lightgrey"){
+                    row.style.backgroundColor = "white"
+                    }
+                    else{
+                        row.style.backgroundColor = "lightgrey"
+                    }
+                    var checkboxes = row.getElementsByTagName("input")
                      for (var i = 0; i < checkboxes.length; i++)
                      {
-                         if (checkboxes[i].type == 'checkbox')
-                         {
-                             checkboxes[i].checked = false;
-                         }
-                     }
-                }
-
-                function check_getRow(td) {
-                    console.log(td.checked)
-                    var row = td.parentNode.parentNode;
-                    var queuing = false
-{#                    console.log("========ok", row.nodeName)#}
-                    if (row.nodeName == "TR"){
-                        var cells = row.getElementsByTagName("span")
-                         for (var i = 0; i < cells.length; i++) {
-{#                             console.log(cells[i].innerHTML)#}
-                             if (cells[i].innerHTML == "QUEUING"){
-                                queuing = true
-                            }
-                        }
-                    }
-                    if (queuing){
-                        alert("This task is not available yet...")
-                        td.checked = false
-                    }
-                    else{
-                        if (td.checked == false){
-                            td.checked = true
-                        }
-                        else{
-                             td.checked = false
-                        }
-                        var row = td.parentNode.parentNode;
-                        console.log("========", row.nodeName)
-                        if(row.style.backgroundColor == "lightgrey"){
-                            row.style.backgroundColor = "white"
-                        }
-                        else{
-                            row.style.backgroundColor = "lightgrey"
-                        }
-                        var checkboxes = row.getElementsByTagName("input")
-                        for (var i = 0; i < checkboxes.length; i++)
-                        {
-                             if (checkboxes[i].checked == false){
-                                 checkboxes[i].checked = true
-                             }
-                             else{
-                                 checkboxes[i].checked = false
-                             }
-                        }
-                    }
-
-                }
-                function getRow(td) {
-                    var row = td.parentNode;
-                    console.log("========", row.nodeName)
-                    var queuing = false
-                    if (row.nodeName == "TR"){
-                        var cells = row.getElementsByTagName("span")
-                         for (var i = 0; i < cells.length; i++) {
-                             console.log(cells[i].innerHTML)
-                             if (cells[i].innerHTML == "QUEUING"){
-                                queuing = true
-                            }
-                        }
-                    }
-
-                    if (queuing){
-                        alert("This task is not available yet...")
-                    }
-                    else{
-                        if(row.style.backgroundColor == "lightgrey"){
-                        row.style.backgroundColor = "white"
-                        }
-                        else{
-                            row.style.backgroundColor = "lightgrey"
-                        }
-                        var checkboxes = row.getElementsByTagName("input")
-                         for (var i = 0; i < checkboxes.length; i++)
-                         {
-                             if (checkboxes[i].checked == false){
-                                 checkboxes[i].checked = true
-                             }
-                             else{
-                                 checkboxes[i].checked = false
-                             }
-
-
-                         }
-
-                    }
-
-
-
-
-
-                }
-                function checkAll(select_all) {
-                    var checkboxes = document.getElementsByTagName('input')
-                    for (var i = 0; i < checkboxes.length; i++)
-                     {
-                         if (checkboxes[i].type == 'checkbox')
-                         {
-                             checkboxes[i].checked = true;
-                         }
-                     }
-
-                    var rows = document.getElementsByTagName('tr')
-                    for (var i = 1; i < rows.length; i++){
-                        var queuing = false
-                        var status_td = rows[i].getElementsByTagName("span")
-                             console.log(status_td[0].innerHTML)
-                             if (status_td[0].innerHTML == "FINISHED"){
-                                queuing = true
-                        }
-                        if(queuing){
-                            rows[i].style.backgroundColor = "lightgrey"
-                        }
-                    }
-                }
-                function invert_select() {
-                    var checkboxes = document.getElementsByTagName('input')
-                    for (var i = 0; i < checkboxes.length; i++)
-                     {
-                         if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true)
-                         {
-                             checkboxes[i].checked = false
-                             checkboxes[i].parentNode.parentNode.style.backgroundColor = "white"
-                         }
-                         else if(checkboxes[i].type == 'checkbox' && checkboxes[i].checked == false){
+                         if (checkboxes[i].checked == false){
                              checkboxes[i].checked = true
-                             checkboxes[i].parentNode.parentNode.style.backgroundColor = "lightgrey"
+                         }
+                         else{
+                             checkboxes[i].checked = false
+                         }
+
+
+                     }
+
+                }
+
+
+
+
+
+            }
+            function checkAll(select_all) {
+                var checkboxes = document.getElementsByTagName('input')
+                for (var i = 0; i < checkboxes.length; i++)
+                 {
+                     if (checkboxes[i].type == 'checkbox')
+                     {
+                         if(checkboxes[i].parentNode.parentNode.nodeName == 'TR'){
+                            checkboxes[i].checked = true;
+
                          }
                      }
+                 }
+
+                var rows = document.getElementsByTagName('tr')
+                for (var i = 1; i < rows.length; i++){
+                    var queuing = false
+                    var status_td = rows[i].getElementsByTagName("span")
+                         console.log(status_td[0].innerHTML)
+                         if (status_td[0].innerHTML == "FINISHED"){
+                            queuing = true
+                    }
+                    if(queuing){
+                        rows[i].style.backgroundColor = "lightgrey"
+                    }
                 }
+            }
+            function invert_select() {
+                var checkboxes = document.getElementsByTagName('input')
+                for (var i = 0; i < checkboxes.length; i++)
+                 {
+                     if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true)
+                     {
+                         console.log(checkboxes[i].parentNode.parentNode.nodeName )
+                         if(checkboxes[i].parentNode.parentNode.nodeName == 'TR'){
+                            checkboxes[i].checked = false
+                            checkboxes[i].parentNode.parentNode.style.backgroundColor = "white"
+                         }
+                     }
+                     else if(checkboxes[i].type == 'checkbox' && checkboxes[i].checked == false){
+                         console.log(checkboxes[i].parentNode.parentNode.nodeName )
+                         if(checkboxes[i].parentNode.parentNode.nodeName == 'TR'){
+                            checkboxes[i].checked = true
+                            checkboxes[i].parentNode.parentNode.style.backgroundColor = "lightgrey"
+                         }
+                     }
+                 }
+            }
             function empty_select(){
                  var checkboxes = document.getElementsByTagName('input')
                  for (var i = 0; i < checkboxes.length; i++)
@@ -302,7 +406,7 @@
 
             }
 
-            </script>
+        </script>
 {#            <form action="{% url 'main:order' %}" method="post">#}
 {#                <select class="form-control" name="fruit_type">#}
 {#                    <option>Apple</option> <option>Banana</option>#}

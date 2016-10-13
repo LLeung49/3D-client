@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import os
 from django.db import models
 
 
@@ -19,6 +18,9 @@ class UploadFile(models.Model):
 class Task(models.Model):
     filename = models.CharField(max_length=1000)
     username = models.CharField(max_length=100)
+    threshold = models.IntegerField(default=10)
+    speed = models.CharField(max_length=3, default="ssm")
+    ssmiter = models.IntegerField(default="20")
     outfile_name = models.CharField(max_length=1000, default="b")
     submit_time = models.CharField(max_length=50, default="2016-Oct-07 11:10:09")
     outfile_location = models.CharField(max_length=1000, default="a")

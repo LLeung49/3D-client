@@ -7,6 +7,9 @@ from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
+from .models import UserProfile
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
 
 
 class UserFormView(View):
@@ -35,6 +38,11 @@ class UserFormView(View):
                 password = form.cleaned_data['password']
                 user.set_password(password)
                 user.save()
+                # check if user register successfully
+                if User.objects.get(username=username):
+                    user_profile = UserProfile(user=User.objects.get(username=username))
+                    user_profile.save()
+
                 notification = "Thanks to join us."
                 return render(request, 'message.html', {'message': notification})
         elif num_fields == 3:
