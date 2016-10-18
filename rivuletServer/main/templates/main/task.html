@@ -1,18 +1,129 @@
 {% extends 'main/base.html' %}
-
 {% block body %}
 
 
         <div class="container-fluid">
 {#                <link rel="stylesheet" type="text/css" href="statics/style.css">#}
             <div class="row">
-                <form  id="new_task" nanme="new_task" method="POST" onsubmit="return confirm_tasks()" enctype="multipart/form-data">
+                    <!-- Upload section -->
+                    <div class="panel_section">
+                    <!-- IMPORTANT enctype attribute! -->
+                    <form class="dropzone" action="{% url "main:upload" %}" method="post" enctype="multipart/form-data" id="my-dropzone">
+                        {% csrf_token %}
+                    </form>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <button id="submit-all" data-dz-remove class="button button-block">
+                                <i class="glyphicon glyphicon-upload"></i>
+                                <span>Start Upload</span>
+                            </button>
+                            </div>
+                        <div class="col-lg-6">
+                            <button id="cancel" data-dz-remove class="button button-block">
+                              <i class="glyphicon glyphicon-ban-circle"></i><span> Cancel Upload</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <script type="text/javascript">
+
+                        var upload_files_size = 0
+
+                        Dropzone.options.myDropzone = {
+                            maxFilesize: 4096,
+                            // Prevents Dropzone from uploading dropped files immediately
+                            autoProcessQueue : false,
+                            acceptedFiles: ".tif, .v3d",
+                            maxFiles: 6,
+                            parallelUploads: 5,
+                            dictMaxFilesExceeded: 'Upload 5 files a time maximum!',
+
+                            accept: function(file, done) {
+                                var all_upload_files = {{ all_upload_files|safe }};
+                                var free_storage = {{ free_storage }}
+                                console.log(file.size)
+                                var exceed_capacity = false
+                                var exist = false
+                                {#filename should only contains ascii characters#}
+                                var invalid_filename = false
+                                console.log(file.size/(1024*1024))
+
+                                console.log(all_upload_files.length)
+                                console.log(free_storage)
+
+                                if((upload_files_size + file.size/(1024*1024)) > free_storage || free_storage < 0){
+                                    exceed_capacity = true
+                                }
+                                for(var i=0; i < all_upload_files.length; i++){
+                                    console.log(all_upload_files[i])
+                                    if(file.name == all_upload_files[i]){
+                                        exist = true
+                                    }
+                                }
+                                if(/^[\x20-\x7E]+$/.test(file.name)){
+                                    ;
+                                }
+                                else{
+                                    invalid_filename = true
+                                }
+
+                                if(exist){
+                                    done("File already exist!")
+                                }
+                                else if(exceed_capacity){
+                                    var capacity_remaining = free_storage - upload_files_size
+                                    done("Exceed maximum storage capacity! Only " + capacity_remaining.toFixed(2).toString() + "m left!")
+                                }
+                                else if(invalid_filename){
+                                    done("Invalid Filename!")
+                                }
+                                else{
+                                    done()
+                                    upload_files_size = upload_files_size + file.size/(1024*1024)
+                                }
+                            },
+
+                            init : function() {
+                                var submitButton = document.querySelector("#submit-all")
+                                var cancelButton = document.querySelector("#cancel")
+                                myDropzone = this;
+
+                                this.on("complete",function(){
+                                {#should refresh file section now#}
+                                    refresh_files()
+                                });
+
+                                cancelButton.addEventListener("click", function() {
+                                    myDropzone.removeAllFiles(true);
+                                    upload_files_size = 0
+
+                                });
+                                submitButton.addEventListener("click", function() {
+                                    myDropzone.processQueue();
+                                    // Tell Dropzone to process all queued files.
+                                });
+                                this.on("uploadprogress", function(file, progress) {
+                                    console.log("File progress", progress);
+                                });
+                                // You might want to show the submit button only when
+                                // files are dropped here:
+                                this.on("addedfile", function() {
+                                    // Show submit button here and/or inform user to click it.
+                                });
+
+                            }
+                        };
+                    </script>
+                </div>
+            </div>
+            <div class="row">
+                <form  id="new_task" name="new_task" method="POST" onsubmit="return confirm_tasks()" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="col-lg-6">
+                    <div class="col-lg-8">
                         <div class="preview_section">
                         <!-- file load -->
                             <div id="filedrag" class = "dropzone2">
-                                <div id="drop_area">Preview</div>
+                                <div id="drop_area">Select Raw File To Preview</div>
                             </div>
                             <div>
 
@@ -21,15 +132,15 @@
                                         <input type="checkbox" onchange="checkAll_radio(this)"><label id="checkbox_text">Select All</label></input>
                                         <button class="table_button" name="delete_raw_file_button" id="delete_raw_file_button" onclick="clicked='delete_raw_files'" type="submit">Delete Selected Raw Files</button>
                                 </div>
-                                <select multiple id="files" name="files[]" form="new_task" required>
+                                <select multiple id="files" name="files[]" form="new_task" required onchange="preview_thumbnails(this)">
                                     {% for file in all_files %}
-                                        <option value="{{ file }}">{{ file }}</option>
+                                        <option  value="{{ file }}">{{ file }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6">
+                    <div class="col-lg-4">
 
                         <div class="preview_section">
                             <label>Parameters:</label>
@@ -72,7 +183,7 @@
 
 
                                 <div class="row">
-                                    <div class="col-lg-offset-8 col-lg-4">
+                                    <div class="col-lg-offset-5 col-lg-4">
                                         <button type="submit" onclick="clicked='new_tasks'" name="new_task_button" class="btn btn-success" >Submit</button>
                                     </div>
                                 </div>
@@ -144,7 +255,7 @@
 
                                 <div class="row">
 
-                                    <div class="col-lg-offset-8 col-lg-4">
+                                    <div class="col-lg-offset-7 col-lg-8">
                                         <button type="submit" id="delete_button" name="delete_button" class="btn btn-danger" onclick="clicked='delete'">Delete</button>
                                         <button name="download_button" class="btn btn-success"  type="submit" onclick="clicked='download'">download</button>
                                     </div>
@@ -178,7 +289,48 @@
                      }
                  }
             }
+            function preview_thumbnails(e) {
+                var strUser = e.options[e.selectedIndex].value;
+                $.ajax({
+                    type: "POST",
+                    url: "{% url "main:get_thumbnail" %}",
+                    data: {
+                        csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+                        filename: strUser,
+                    },
+                    success: function(data) {
+                        alert(data)
 
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        alert("Please report this error: "+errorThrown+xhr.status+xhr.responseText);
+                    }
+                });
+            }
+
+            function refresh_files() {
+                $.ajax({
+                    type: "POST",
+                    url: "{% url "main:update_file" %}",  // or just url: "/my-url/path/"
+                    data: {
+                        csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+
+                    },
+                    success: function(data) {
+                        var files_display_html=''
+                        for(var i=0;i<data.length;i++){
+{#                            <option value="{{ file }}">{{ file }}</option>#}
+                            files_display_html +="<option value=\""+ data[i]+"\">"+ data[i] +"</option>"
+{#                            document.getElementById('files').innerHTML = "It can change"#}
+                        }
+                        document.getElementById('files').innerHTML = files_display_html
+
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        alert("Please report this error: "+errorThrown+xhr.status+xhr.responseText);
+                    }
+                });
+            }
             function confirm_tasks() {
                 if (clicked == "delete_raw_files") {
                     if (confirm("Do you really want to delete those raw files?")) {
@@ -331,16 +483,8 @@
                          else{
                              checkboxes[i].checked = false
                          }
-
-
                      }
-
                 }
-
-
-
-
-
             }
             function checkAll(select_all) {
                 var checkboxes = document.getElementsByTagName('input')
@@ -349,7 +493,12 @@
                      if (checkboxes[i].type == 'checkbox')
                      {
                          if(checkboxes[i].parentNode.parentNode.nodeName == 'TR'){
-                            checkboxes[i].checked = true;
+                             var status = checkboxes[i].parentNode.parentNode.getElementsByTagName("span")
+                             console.log(status[0].innerHTML)
+                             if (status[0].innerHTML == "FINISHED"){
+                                 checkboxes[i].checked = true;
+                             }
+
 
                          }
                      }
@@ -357,15 +506,14 @@
 
                 var rows = document.getElementsByTagName('tr')
                 for (var i = 1; i < rows.length; i++){
-                    var queuing = false
+{#                    var queuing = false#}
                     var status_td = rows[i].getElementsByTagName("span")
-                         console.log(status_td[0].innerHTML)
-                         if (status_td[0].innerHTML == "FINISHED"){
-                            queuing = true
-                    }
-                    if(queuing){
-                        rows[i].style.backgroundColor = "lightgrey"
-                    }
+                     console.log(status_td[0].innerHTML)
+                     if (status_td[0].innerHTML == "FINISHED"){
+{#                        queuing = true#}
+                         rows[i].style.backgroundColor = "lightgrey"
+                     }
+
                 }
             }
             function invert_select() {
@@ -376,15 +524,23 @@
                      {
                          console.log(checkboxes[i].parentNode.parentNode.nodeName )
                          if(checkboxes[i].parentNode.parentNode.nodeName == 'TR'){
-                            checkboxes[i].checked = false
-                            checkboxes[i].parentNode.parentNode.style.backgroundColor = "white"
+                            var status = checkboxes[i].parentNode.parentNode.getElementsByTagName("span")
+                            if (status[0].innerHTML == "FINISHED"){
+                                checkboxes[i].checked = false
+                                checkboxes[i].parentNode.parentNode.style.backgroundColor = "white"
+                            }
+
                          }
                      }
                      else if(checkboxes[i].type == 'checkbox' && checkboxes[i].checked == false){
                          console.log(checkboxes[i].parentNode.parentNode.nodeName )
                          if(checkboxes[i].parentNode.parentNode.nodeName == 'TR'){
-                            checkboxes[i].checked = true
-                            checkboxes[i].parentNode.parentNode.style.backgroundColor = "lightgrey"
+                             var status = checkboxes[i].parentNode.parentNode.getElementsByTagName("span")
+                            if (status[0].innerHTML == "FINISHED"){
+                                checkboxes[i].checked = true
+                                checkboxes[i].parentNode.parentNode.style.backgroundColor = "lightgrey"
+                            }
+
                          }
                      }
                  }

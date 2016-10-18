@@ -20,24 +20,42 @@ from io import BytesIO
 import json
 from login.models import UserProfile
 from django.contrib.auth.models import User
+from rivuletpy.rivuletpy.utils.io import *
+from libtiff import TIFFfile, TIFF
+import scipy.misc
+from django.http import Http404
 # Create your views here.
 
 
-# def order(request):
-#     fruit = request.POST.get('fruit_type', '')
-#     num_fruit = int(request.POST.get('num_fruit', '1'))
-#     task_id = async('main.tasks.order_fruit', fruit=fruit, num_fruit=num_fruit)  # Create async task
-#     print("==========================\n", fruit)
-#     print("==========================\n", num_fruit)
-#     # ret2 = result(task_id, 10000)  # block and wait for 200 ms
-#     # print("==========================\n", ret2)
-#
-#     messages.info(  # Django message as notification
-#         request,
-#         'You ordered {fruit:s} x {num_fruit:d} (task: {task})'
-#         .format(fruit=fruit, num_fruit=num_fruit, task=humanize(task_id))
-#     )
-#     return render(request, 'main/message.html')
+def get_thumbnail(request):
+    if request.is_ajax():
+        try:
+            data = "img"
+        except KeyError:
+            return HttpResponse('Error')  # incorrect post
+        # do stuff, e.g. calculate a score
+        return HttpResponse(data)
+    else:
+        raise Http404
+
+
+def update_file(request):
+    if request.is_ajax():
+        try:
+            all_upload_files = UploadFile.objects.filter(username=request.user.username)
+            files_array = []
+            for file in all_upload_files:
+                files_array.append(str(file))
+
+            json_upload_files = json.dumps(files_array)
+            # data = {'json_upload_files': json_upload_files}
+            # messages = "fuck you!!! this is from server!!!"
+        except KeyError:
+            return HttpResponse('Error')  # incorrect post
+        # do stuff, e.g. calculate a score
+        return HttpResponse(json_upload_files, content_type="application/json")
+    else:
+        raise Http404
 
 
 def new_task(request):
@@ -45,7 +63,7 @@ def new_task(request):
         all_files = UploadFile.objects.filter(username=request.user.username)
         all_unfinished_tasks = Task.objects.filter(username=request.user.username, status="QUEUING")
         all_failed_tasks = Task.objects.filter(username=request.user.username, status="FAILED")
-        print("===================\n", UserProfile.objects.get(user=User.objects.get(username=request.user.username)).capacity)
+        # print("===================\n", UserProfile.objects.get(user=User.objects.get(username=request.user.username)).capacity)
 
         for unfinished_task in all_unfinished_tasks:
             if os.path.exists(unfinished_task.outfile_location):
@@ -57,7 +75,22 @@ def new_task(request):
                 failed_task.save()
         all_tasks = Task.objects.filter(username=request.user.username)
         template = loader.get_template('main/task.html')
-        context = {'all_files': all_files, 'all_tasks': all_tasks}
+        # info for upload
+        username = request.user.username
+        current_user = UserProfile.objects.get(user=User.objects.get(username=username))
+        capacity = current_user.capacity
+        used_capacity = current_user.storage_used
+        free_storage = capacity - used_capacity
+        print("================================\n", free_storage)
+        all_upload_files = UploadFile.objects.filter(username=request.user.username)
+        files_array = []
+        for file in all_upload_files:
+            files_array.append(str(file))
+
+        json_upload_files = json.dumps(files_array)
+        # data = {'all_upload_files': json_upload_files, 'free_storage': free_storage}
+
+        context = {'temp': "abcdefg", 'all_files': all_files, 'all_tasks': all_tasks, 'all_upload_files': json_upload_files, 'free_storage': free_storage}
         return HttpResponse(template.render(context, request))
     elif request.method == 'POST' and request.user.is_authenticated():
         if 'new_task_button' in request.POST:
@@ -75,16 +108,16 @@ def new_task(request):
 
                 # Current time in UTC
                 now_utc = datetime.now(timezone('UTC'))
-                print("+++++++++", now_utc.strftime(fmt))
+                # print("+++++++++", now_utc.strftime(fmt))
 
                 # Convert to US/Pacific time zone
                 now_local = now_utc.astimezone(timezone('Australia/Sydney'))
-                print("_+++++++++++++++", now_local.strftime(fmt))
+                # print("_+++++++++++++++", now_local.strftime(fmt))
 
                 submit_time = now_utc.strftime("%Y%m%d%H%M%S")
-                str_time = now_local.strftime("%Y-%m-%d %H:%M:%S %p")
+                str_time = now_local.strftime("%Y-%m-%d %H:%M:%S")
                 # str_time = now_local.strftime("%b %d,%Y %I:%M:%S %p")
-                print("====================\n", str_time)
+                # print("====================\n", str_time)
                 output_file = file + "_" + submit_time + ".swc"
                 output_location = file_path + "_" + submit_time + ".swc"
 
@@ -118,13 +151,20 @@ def new_task(request):
             username = request.user.username
             for file in filenames:
                 file_location = UploadFile.objects.get(filename=file, username=username).file_path()
-                temp = UploadFile.objects.filter(filename=file, username=username).delete()
                 raw_file_size = int(os.path.getsize(str(file_location)))/(1024*1024)
-                os.remove(file_location)
+                try:
+                    os.remove(file_location)
+                    os.remove(file_location+'_2d_yz.jpg')
+                    os.remove(file_location + '_2d_xy.jpg')
+                    os.remove(file_location + '_2d_xz.jpg')
+                except OSError:
+                    print("Delete file error!")
+                else:
+                    temp = UploadFile.objects.filter(filename=file, username=username).delete()
+                    print("===================\n", temp)
                 current_user = UserProfile.objects.get(user=User.objects.get(username=username))
                 current_user.storage_used -= raw_file_size
                 current_user.save()
-                print("===================\n", temp)
 
             return HttpResponseRedirect(reverse('main:task'))
         elif 'download_button' in request.POST:
@@ -151,9 +191,14 @@ def new_task(request):
         elif 'delete_button' in request.POST:
             for item in request.POST:
                 if item != "delete_button" and item != "csrfmiddlewaretoken":
-                    temp = Task.objects.filter(outfile_location=item).delete()
-                    os.remove(item)
-                    print("=======================\n", temp)
+                    try:
+                        os.remove(item)
+
+                    except OSError:
+                        print("Delete file error!")
+                    else:
+                        temp = Task.objects.filter(outfile_location=item).delete()
+                        print("=======================\n", temp)
 
             return HttpResponseRedirect(reverse('main:task'))
 
@@ -178,12 +223,21 @@ def upload(request):
                     file=request.FILES['file']
                 )
                 new_file.save()
-                new_file_size = int(os.path.getsize(str(new_file.file)))/(1024*1024)
+
                 # increment the used storage
+                new_file_size = int(os.path.getsize(str(new_file.file))) / (1024 * 1024)
                 current_user = UserProfile.objects.get(user=User.objects.get(username=username))
                 current_user.storage_used += new_file_size
                 current_user.save()
 
+                # generate thumbnail
+                img = loadimg(str(new_file.file))
+                img_yz = img.max(axis=0)
+                scipy.misc.imsave(str(new_file.file)+'_2d_yz.jpg', img_yz)
+                img_xz = img.max(axis=1)
+                scipy.misc.imsave(str(new_file.file) + '_2d_xz.jpg', img_xz)
+                img_xy = img.max(axis=2)
+                scipy.misc.imsave(str(new_file.file) + '_2d_xy.jpg', img_xy)
                 print("===================\n", new_file.file)
                 print("\n===================\n", new_file_size)
 
