@@ -27,36 +27,44 @@
 
                     <script type="text/javascript">
 
-                        var upload_files_size = 0
+                        var queued_files_size = 0
+                        var all_upload_files = {{ all_upload_files|safe }};
+                        var free_storage = {{ free_storage }}
+                        var queued_files = new Array()
+                        var processed_files = new Array()
 
                         Dropzone.options.myDropzone = {
                             maxFilesize: 4096,
                             // Prevents Dropzone from uploading dropped files immediately
                             autoProcessQueue : false,
                             acceptedFiles: ".tif, .v3d",
-                            maxFiles: 6,
-                            parallelUploads: 5,
+                            maxFiles: 100,
+                            parallelUploads: 100,
                             dictMaxFilesExceeded: 'Upload 5 files a time maximum!',
+                            uploadMultiple: true,
 
                             accept: function(file, done) {
-                                var all_upload_files = {{ all_upload_files|safe }};
-                                var free_storage = {{ free_storage }}
-                                console.log(file.size)
+
+{#                                console.log(file.size)#}
                                 var exceed_capacity = false
                                 var exist = false
                                 {#filename should only contains ascii characters#}
                                 var invalid_filename = false
-                                console.log(file.size/(1024*1024))
+{#                                console.log(file.size/(1024*1024))#}
 
-                                console.log(all_upload_files.length)
-                                console.log(free_storage)
+{#                                console.log(all_upload_files.length)#}
+{#                                console.log(free_storage)#}
 
-                                if((upload_files_size + file.size/(1024*1024)) > free_storage || free_storage < 0){
+                                if((queued_files_size + file.size/(1024*1024)) > free_storage || free_storage < 0){
                                     exceed_capacity = true
                                 }
                                 for(var i=0; i < all_upload_files.length; i++){
-                                    console.log(all_upload_files[i])
                                     if(file.name == all_upload_files[i]){
+                                        exist = true
+                                    }
+                                }
+                                for(var i=0; i < queued_files.length; i++){
+                                    if(file.name == queued_files[i]){
                                         exist = true
                                     }
                                 }
@@ -71,7 +79,7 @@
                                     done("File already exist!")
                                 }
                                 else if(exceed_capacity){
-                                    var capacity_remaining = free_storage - upload_files_size
+                                    var capacity_remaining = free_storage - queued_files_size
                                     done("Exceed maximum storage capacity! Only " + capacity_remaining.toFixed(2).toString() + "m left!")
                                 }
                                 else if(invalid_filename){
@@ -79,8 +87,11 @@
                                 }
                                 else{
                                     done()
-                                    upload_files_size = upload_files_size + file.size/(1024*1024)
+                                    queued_files_size = queued_files_size + file.size/(1024*1024)
+                                    queued_files.push(file.name)
                                 }
+                                console.log(queued_files)
+                                console.log(queued_files_size)
                             },
 
                             init : function() {
@@ -88,9 +99,28 @@
                                 var cancelButton = document.querySelector("#cancel")
                                 myDropzone = this;
 
-                                this.on("complete",function(){
+                                this.on("successmultiple",function(){
                                 {#should refresh file section now#}
                                     refresh_files()
+                                });
+                                myDropzone.on("processing", function(file) {
+                                    processed_files.push(file.name)
+                                });
+                                this.on("removedfile",function(file){
+                                    var index = -1
+{#                                    for(var i=0;i < processed_files.length;i++){#}
+{#                                        if(file.name = processed_files[i]){processed=true}#}
+{#                                    }#}
+                                    if(processed_files.indexOf(file.name) == -1 && queued_files.indexOf(file.name) != -1){
+                                        console.log("processed" + file.name)
+                                        index = queued_files.indexOf(file.name)
+                                        queued_files.splice(index,1)
+                                        queued_files_size = queued_files_size - file.size/(1024*1024)
+                                    }
+
+
+                                    console.log(queued_files)
+                                    console.log(queued_files_size)
                                 });
 
                                 cancelButton.addEventListener("click", function() {
@@ -123,10 +153,48 @@
                         <div class="preview_section">
                         <!-- file load -->
                             <div id="filedrag" class = "dropzone2">
+
                                 <div id="drop_area">Select Raw File To Preview</div>
                             </div>
-                            <div>
+                            <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+                              <!-- Indicators -->
+                              <ol class="carousel-indicators">
+                                <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                                <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                                <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+                              </ol>
 
+                              <!-- Wrapper for slides -->
+                              <div class="carousel-inner" id="pic_viewer" role="listbox">
+                                <div class="item active" align="center">
+                                  <img id="img_xy" style="height:300px;" src="..." alt="...">
+
+                                </div>
+                                <div class="item" align="center">
+                                  <img id="img_xz" style="height:300px;" src="..." alt="...">
+
+                                </div>
+                                  <div class="item" align="center">
+                                    <img id="img_yz" style="height:300px;" src="..." alt="...">
+
+                                </div>
+                                ...
+                              </div>
+
+                              <!-- Controls -->
+                              <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+                                <span class="glyphicon glyphicon-chevron-left"></span>
+                                <span class="sr-only">Previous</span>
+                              </a>
+                              <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+                                <span class="glyphicon glyphicon-chevron-right"></span>
+                                <span class="sr-only">Next</span>
+                              </a>
+                            </div>
+
+
+                            <div>
+                            <br>
                                 <div class="table_button_group">
 {#                                    <label for="fileselect">Select Files to process:</label>#}
                                         <input type="checkbox" onchange="checkAll_radio(this)"><label id="checkbox_text">Select All</label></input>
@@ -217,26 +285,32 @@
                                             </thead>
                                             <tbody>
                                                     {% for task in all_tasks %}
-                                                        <tr data-html="true"  title="Threshold:{{ task.threshold }}&#010;Speed:&#009;{{ task.speed }}&#010;Ssmiter:&#009;{{ task.ssmiter }}">
+                                                        <tr data-html="true" data-toggle="tooltip" data-placement="top"  title="Threshold:&#160;{{ task.threshold }}&#010;Speed:&#160;{{ task.speed }}&#010;Ssmiter:&#160;{{ task.ssmiter }}">
                                                             {% if task.status == "FINISHED" %}
                                                                 <td class="box"><input type="checkbox" onclick="check_getRow(this)" name="{{ task.outfile_location }}" value="{{ task.outfile_location }}"/></th>
                                                                 <td class="filename" onclick="getRow(this)">{{ task.filename }}</td>
-                                                                <td class="outfile" onclick="getRow(this)">{{ task.outfile_name }}</td>
+                                                                <td class="outfile"  onclick="getRow(this)">{{ task.outfile_name }}</td>
                                                                 <td class="submit_time" onclick="getRow(this)">{{ task.submit_time }}</td>
-                                                                <td align="left" class="status" onclick="getRow(this)"><span class="label label-success">{{ task.status }}</span></td>
+                                                                <td align="left" id="{{ task.outfile_name }}" class="status" onclick="getRow(this)"><span class="label label-success">{{ task.status }}</span></td>
 
                                                             {% elif task.status == "QUEUING" %}
                                                                 <td class="box"><input type="checkbox"  disabled readonly/></th>
                                                                 <td class="filename">{{ task.filename }}</td>
-                                                                <td class="outfile">{{ task.outfile_name }}</td>
+                                                                <td class="outfile" >{{ task.outfile_name }}</td>
                                                                 <td class="submit_time">{{ task.submit_time }}</td>
-                                                                <td class="status"><span class="label label-warning">{{ task.status }}</span></td>
+                                                                <td class="status" id="{{ task.outfile_name }}"><span class="label label-warning">{{ task.status }}</span></td>
+                                                            {% elif task.status == "PROCESSING" %}
+                                                                <td class="box"><input type="checkbox"  disabled readonly/></th>
+                                                                <td class="filename">{{ task.filename }}</td>
+                                                                <td class="outfile" >{{ task.outfile_name }}</td>
+                                                                <td class="submit_time">{{ task.submit_time }}</td>
+                                                                <td class="status" id="{{ task.outfile_name }}"><span class="label label-info">{{ task.status }}</span></td>
                                                             {% else%}
                                                                 <td class="box"><input type="checkbox"  disabled readonly/></th>
                                                                 <td class="filename">{{ task.filename }}</td>
-                                                                <td class="outfile">{{ task.outfile_name }}</td>
+                                                                <td class="outfile" id="{{ task.outfile_name }}">{{ task.outfile_name }}</td>
                                                                 <td class="submit_time">{{ task.submit_time }}</td>
-                                                                <td class="status"><span class="label label-danger">{{ task.status }}</span></td>
+                                                                <td class="status" id="{{ task.outfile_name }}"><span class="label label-danger">{{ task.status }}</span></td>
                                                             {% endif %}
 
                                                         </tr>
@@ -267,13 +341,18 @@
             </div>
         {% endif %}
 
+
+
         </div>
         <script type="text/javascript">
             var clicked;
+            timeId = setInterval("check_task_update();",2000)
             $(document).ready(function()
                 {
                     $("#task_table").tablesorter();
 {#                    $('[data-toggle="tooltip"]').tooltip();#}
+                    $("#carousel-example-generic").hide();
+
                 }
             );
 
@@ -289,6 +368,77 @@
                      }
                  }
             }
+
+            function check_task_update(){
+                 $.ajax({
+                    type: "POST",
+                    url: "{% url "main:check_task_update" %}",
+                    data: {
+                        csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+
+                    },
+                    success: function(tasks) {
+
+{#                        alert(tasks.finished_tasks)#}
+{#                        for(var i = 0; i < tasks.finished_tasks.length; i++){#}
+{#                            alert(tasks.finished_tasks[i])#}
+{#                        }#}
+                        var finished_tasks = tasks.finished_tasks
+                        var processing_tasks = tasks.processing_tasks
+                        var failed_tasks = tasks.failed_tasks
+
+
+                        var display_tasks = document.getElementsByClassName("outfile")
+
+                        for(var j = 0; j < display_tasks.length; j++){
+                            var finished = false
+                            var failed = false
+                            var processing = false
+                            out_name = display_tasks[j].innerHTML
+{#                            alert(out_name)#}
+                            for(var i = 0; i < finished_tasks.length; i++){
+{#                                alert(out_name,finished_tasks[i])#}
+                                if(out_name == finished_tasks[i]){
+                                    finished = true
+                                }
+                            }
+                            for(var i = 0; i < processing_tasks.length; i++){
+                                if(out_name == processing_tasks[i]){
+                                    processing = true
+                                }
+                            }
+                            for(var i = 0; i < failed_tasks.length; i++){
+                                if(out_name == failed_tasks[i]){
+                                    failed = true
+                                }
+                            }
+                            if (finished){
+                                var tr = display_tasks[i].parentNode
+                                tr.getElementsByClassName("status").innerHTML = "FINISHED"
+{#                                alert("finished")#}
+                                document.getElementById(out_name).innerHTML = "<span class='label label-success'>FINISHED</span>"
+                            }
+                            else if (failed){
+                                var tr = display_tasks[i].parentNode
+                                tr.getElementsByClassName("status").innerHTML = "FAILED"
+                                document.getElementById(out_name).innerHTML = "<span class='label label-warning'>FAILED</span>"
+                            }
+                            else if (processing){
+                                var tr = display_tasks[i].parentNode
+                                tr.getElementsByClassName("status").innerHTML = "PROCESSING"
+                                document.getElementById(out_name).innerHTML = "<span class='label label-info'>PROCESSING</span>"
+                            }
+
+                        }
+
+
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        alert("Please report this error: "+errorThrown+xhr.status+xhr.responseText);
+                    }
+                });
+            }
+
             function preview_thumbnails(e) {
                 var strUser = e.options[e.selectedIndex].value;
                 $.ajax({
@@ -299,7 +449,12 @@
                         filename: strUser,
                     },
                     success: function(data) {
-                        alert(data)
+
+                        document.getElementById("img_xy").src=data[0]
+                        document.getElementById("img_yz").src=data[1]
+                        document.getElementById("img_xz").src=data[2]
+                        $("#carousel-example-generic").show();
+                        $("#filedrag").hide();
 
                     },
                     error: function(xhr, textStatus, errorThrown) {
@@ -563,19 +718,5 @@
             }
 
         </script>
-{#            <form action="{% url 'main:order' %}" method="post">#}
-{#                <select class="form-control" name="fruit_type">#}
-{#                    <option>Apple</option> <option>Banana</option>#}
-{#                </select>#}
-{#                <input type="number" name="num_fruit" min="1">#}
-{#                <button type="submit">Send invitation</button>#}
-{#                {% csrf_token %}#}
-{#            </form>#}
-
-
-
-
-
-
 
 {% endblock %}

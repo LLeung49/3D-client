@@ -24,17 +24,54 @@ from rivuletpy.rivuletpy.utils.io import *
 from libtiff import TIFFfile, TIFF
 import scipy.misc
 from django.http import Http404
+from django.core.files import File
 # Create your views here.
+
+
+def check_task_update(request):
+    if request.is_ajax():
+        try:
+            finished_tasks = []
+            processing_tasks = []
+            failed_tasks = []
+            all_tasks = []
+            all_failed_tasks = Task.objects.filter(username=request.user.username, status="FAILED")
+            all_processing_tasks = Task.objects.filter(username=request.user.username, status="PROCESSING")
+            all_finished_tasks = Task.objects.filter(username=request.user.username, status="FINISHED")
+
+            for failed_task in all_failed_tasks:
+                failed_tasks.append(failed_task.outfile_name)
+            for processing_task in all_processing_tasks:
+                processing_tasks.append(processing_task.outfile_name)
+            for finished_task in all_finished_tasks:
+                finished_tasks.append(finished_task.outfile_name)
+
+            data = json.dumps({"finished_tasks": finished_tasks, "processing_tasks": processing_tasks, "failed_tasks": failed_tasks})
+            print(data)
+        except KeyError:
+            return HttpResponse('Update tasks error!')  # incorrect post
+        # do stuff, e.g. calculate a score
+        return HttpResponse(data, content_type="application/json")
+    else:
+        raise Http404
 
 
 def get_thumbnail(request):
     if request.is_ajax():
         try:
-            data = "img"
+            thumbnails_array = []
+            filename = request.POST['filename']
+            username = request.user.username
+            file = UploadFile.objects.get(filename=filename, username=username)
+            thumbnails_array.append(file.thumbnail_xy.url)
+            thumbnails_array.append(file.thumbnail_yz.url)
+            thumbnails_array.append(file.thumbnail_xz.url)
+            print("===================\n", file.thumbnail_xy.url)
+            json_upload_files = json.dumps(thumbnails_array)
         except KeyError:
-            return HttpResponse('Error')  # incorrect post
+            return HttpResponse('Open Thumbnails Error!')  # incorrect post
         # do stuff, e.g. calculate a score
-        return HttpResponse(data)
+        return HttpResponse(json_upload_files, content_type="application/json")
     else:
         raise Http404
 
@@ -42,11 +79,19 @@ def get_thumbnail(request):
 def update_file(request):
     if request.is_ajax():
         try:
-            all_upload_files = UploadFile.objects.filter(username=request.user.username)
+            username = request.user.username
+            # increment the used storage and refresh file list
+            current_user = UserProfile.objects.get(user=User.objects.get(username=username))
+            all_upload_files = UploadFile.objects.filter(username=username)
             files_array = []
+            current_user.storage_used = 0
             for file in all_upload_files:
                 files_array.append(str(file))
-
+                file_size = int(os.path.getsize(file.file.path)) / (1024 * 1024)
+                print("==\n", file_size)
+                current_user.storage_used += file_size
+            current_user.save()
+            print("++++++++\n", current_user.storage_used)
             json_upload_files = json.dumps(files_array)
             # data = {'json_upload_files': json_upload_files}
             # messages = "fuck you!!! this is from server!!!"
@@ -90,7 +135,7 @@ def new_task(request):
         json_upload_files = json.dumps(files_array)
         # data = {'all_upload_files': json_upload_files, 'free_storage': free_storage}
 
-        context = {'temp': "abcdefg", 'all_files': all_files, 'all_tasks': all_tasks, 'all_upload_files': json_upload_files, 'free_storage': free_storage}
+        context = {'all_files': all_files, 'all_tasks': all_tasks, 'all_upload_files': json_upload_files, 'free_storage': free_storage}
         return HttpResponse(template.render(context, request))
     elif request.method == 'POST' and request.user.is_authenticated():
         if 'new_task_button' in request.POST:
@@ -102,7 +147,7 @@ def new_task(request):
             ssmiter = request.POST.get("ssmiter", '')
             message = "YOU SUBMITTED:\n"
             for file in filenames:
-                file_path = UploadFile.objects.get(filename=file, username=username).file_path()
+                file_path = UploadFile.objects.get(filename=file, username=username).file.path
 
                 fmt = "%Y-%m-%d %H:%M:%S %Z%z"
 
@@ -145,12 +190,12 @@ def new_task(request):
                 request,
                 message
             )
-            return render(request, 'main/message.html')
+            return HttpResponseRedirect(reverse('main:task'))
         elif 'delete_raw_file_button' in request.POST:
             filenames = request.POST.getlist("files[]")
             username = request.user.username
             for file in filenames:
-                file_location = UploadFile.objects.get(filename=file, username=username).file_path()
+                file_location = UploadFile.objects.get(filename=file, username=username).file.path
                 raw_file_size = int(os.path.getsize(str(file_location)))/(1024*1024)
                 try:
                     os.remove(file_location)
@@ -212,36 +257,49 @@ def upload(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             username = request.user.username
-            filename = os.path.basename(request.FILES['file'].name)
-            exist_check = UploadFile.objects.filter(filename=filename, username=username)
-            if exist_check:
-                print("===================\n ALREADY EXIST!!!  ", os.path.basename(request.FILES['file'].name))
-            else:
-                new_file = UploadFile(
-                    username=username,
-                    filename=filename,
-                    file=request.FILES['file']
-                )
-                new_file.save()
+            for key in request.FILES:
+                filename = os.path.basename(request.FILES[key].name)
+                print(filename)
+                exist_check = UploadFile.objects.filter(filename=filename, username=username)
+                if exist_check:
+                    print("===================\n ALREADY EXIST!!!  ", os.path.basename(request.FILES[key].name))
+                else:
+                    temp_file = UploadFile(
+                        username=username,
+                        filename=filename,
+                        file=request.FILES[key]
+                    )
+                    temp_file.save()
 
-                # increment the used storage
-                new_file_size = int(os.path.getsize(str(new_file.file))) / (1024 * 1024)
-                current_user = UserProfile.objects.get(user=User.objects.get(username=username))
-                current_user.storage_used += new_file_size
-                current_user.save()
+                    new_file = UploadFile.objects.get(username=username, filename=filename)
+                    # generate thumbnail
+                    img = loadimg(new_file.file.path)
+                    img_yz = img.max(axis=0)
+                    scipy.misc.imsave(new_file.file.path+'_yz.jpg', img_yz)
+                    img_xz = img.max(axis=1)
+                    scipy.misc.imsave(new_file.file.path + '_xz.jpg', img_xz)
+                    img_xy = img.max(axis=2)
+                    scipy.misc.imsave(new_file.file.path + '_xy.jpg', img_xy)
 
-                # generate thumbnail
-                img = loadimg(str(new_file.file))
-                img_yz = img.max(axis=0)
-                scipy.misc.imsave(str(new_file.file)+'_2d_yz.jpg', img_yz)
-                img_xz = img.max(axis=1)
-                scipy.misc.imsave(str(new_file.file) + '_2d_xz.jpg', img_xz)
-                img_xy = img.max(axis=2)
-                scipy.misc.imsave(str(new_file.file) + '_2d_xy.jpg', img_xy)
-                print("===================\n", new_file.file)
-                print("\n===================\n", new_file_size)
+                    thumbnail_xy = open(new_file.file.path + '_xy.jpg', "rb")
+                    thumbnail_xz = open(new_file.file.path + '_xz.jpg', "rb")
+                    thumbnail_yz = open(new_file.file.path + '_yz.jpg', "rb")
+                    file_thumbnail_xy = File(thumbnail_xy)
+                    file_thumbnail_xz = File(thumbnail_xz)
+                    file_thumbnail_yz = File(thumbnail_yz)
+                    new_file.thumbnail_xy.save(new_file.filename + '_2d_xy.jpg', file_thumbnail_xy)
+                    new_file.thumbnail_yz.save(new_file.filename + '_2d_yz.jpg', file_thumbnail_yz)
+                    new_file.thumbnail_xz.save(new_file.filename + '_2d_xz.jpg', file_thumbnail_xz)
+                    thumbnail_xy.close()
+                    thumbnail_yz.close()
+                    thumbnail_xz.close()
+                    os.remove(new_file.file.path + '_xy.jpg')
+                    os.remove(new_file.file.path + '_yz.jpg')
+                    os.remove(new_file.file.path + '_xz.jpg')
+                    new_file.save()
 
-            return HttpResponseRedirect(reverse('main:home'))
+
+            return HttpResponseRedirect(reverse('main:task'))
     elif request.method == 'GET' and request.user.is_authenticated():
         username = request.user.username
         current_user = UserProfile.objects.get(user=User.objects.get(username=username))

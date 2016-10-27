@@ -53,7 +53,7 @@ class UserFormView(View):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return render_to_response('main/homepage.html', {'user': user}, RequestContext(request))
-
-        return render(request, self.template_name, {'form': form})
-
+                    # return render_to_response('main/task.html', {'user': user}, RequestContext(request))
+                    return HttpResponseRedirect(reverse('main:task'))
+        return render(request, self.template_name)
+        # return HttpResponseRedirect(reverse('main:task'))

@@ -6,6 +6,9 @@ class UploadFile(models.Model):
     username = models.CharField(max_length=100, default='admin')
     filename = models.CharField(max_length=1000, default='admin_file')
     file = models.FileField(upload_to='raw_files/%Y/%m/%d')
+    thumbnail_xy = models.FileField(upload_to='raw_files/%Y/%m/%d', default=None)
+    thumbnail_yz = models.FileField(upload_to='raw_files/%Y/%m/%d', default=None)
+    thumbnail_xz = models.FileField(upload_to='raw_files/%Y/%m/%d', default=None)
 
     def __str__(self):
         return self.filename

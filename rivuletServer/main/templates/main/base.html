@@ -37,14 +37,14 @@
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav">
                         <li class="active">
-                            <a href="{% url "main:home" %}">
+                            <a href="{% url "main:task" %}">
                                 <span class="glyphicon glyphicon-home" aria-hidden="true"></span>&nbsp;Home Page
                             </a>
                         </li>
                         <li class="">
-                            <a href="{% url 'main:upload'%}">
-                                <span class="glyphicon glyphicon-open" aria-hidden="true"></span>&nbsp;Upload file
-                            </a>
+{#                            <a href="{% url 'main:upload'%}">#}
+{#                                <span class="glyphicon glyphicon-open" aria-hidden="true"></span>&nbsp;Upload file#}
+{#                            </a>#}
                         </li>
 
                     </ul>
@@ -61,11 +61,11 @@
 
                     <ul class="nav navbar-nav navbar-right">
                         <li><p class="navbar-text"><span class="label label-primary"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</span></p></li>
-                         <li class="">
-                            <a href="{% url 'main:task'%}">
-                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;New task
-                            </a>
-                        </li>
+{#                         <li class="">#}
+{#                            <a href="{% url 'main:task'%}">#}
+{#                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;New task#}
+{#                            </a>#}
+{#                        </li>#}
                         <li class="">
                             <a href="{% url "login:register" %}">
                                 <span class="glyphicon glyphicon-off" aria-hidden="true"></span>&nbsp;Logout

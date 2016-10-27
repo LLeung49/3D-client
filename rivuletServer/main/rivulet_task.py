@@ -8,6 +8,11 @@ def process_tif(file_name, file_path, user_name, out_file, output_location, thre
     # Call Rivulet module
     print("\n\nSTARTING PROCESS..." + user_name + "------>" + file_name + "\n\n")
     print(threshold + "+" + ssmiter + "+" + speed)
+
+    processing_task = Task.objects.get(username=user_name, outfile_name=out_file, outfile_location=output_location)
+    processing_task.status = "PROCESSING"
+    processing_task.save()
+
     output_file = out_file
     INTERPRETER = "/usr/bin/python3.4"
     processor = "./rivuletpy/rivulet2"
